@@ -88,3 +88,5 @@
 
 (define (make-from-mag-ang r a)
   ((get 'make-from-mag-ang 'pola) r a))
+
+(real-part (make-from-real-imag 1 2))

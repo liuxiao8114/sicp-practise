@@ -1,0 +1,2 @@
+(define (get-record file)
+  ())
