@@ -76,3 +76,10 @@
       (fib-iter (+ a b) a (+ n 1))))
   (fib-iter 1 1 1)
 )
+
+(define (gcd a b)
+  (cond ((< a b) (gcd b a))
+        ((= 0 (remainder a b)) b)
+        (else (gcd b (remainder a b)))
+  )
+)
