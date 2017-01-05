@@ -77,6 +77,7 @@
   (fib-iter 1 1 1)
 )
 
+
 ;; from 3.3, used in 2-4
 (define (make-table)
   (let ((local-table (list '*table*)))
@@ -116,3 +117,4 @@
 (define operartion-table (make-table))
 (define get (operation-table 'lookup-proc))
 (define put (operation-table 'insert-proc!))
+

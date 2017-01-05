@@ -13,7 +13,8 @@
 (define (operands exp) (cdr exp))
 
 (define (install-sum-package)
-  (define (addend exp) (car exp))
+  
+    (define (addend exp) (car exp))
   (define (augend exp) (cadr exp))
 
   (define (make-sum x y)
@@ -39,3 +40,4 @@
 
 (define (addend sum)
   ((get 'addend '+) sum))
+

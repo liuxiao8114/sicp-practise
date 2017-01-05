@@ -1,5 +1,3 @@
-()
-
 (define (get-record file)
   ()
 )
