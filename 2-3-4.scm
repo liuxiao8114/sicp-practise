@@ -65,6 +65,7 @@
   (put 'imag-part '(rect) imag-part)
   (put 'magnitude '(rect) magnitude)
   (put 'angle '(rect) angle)
+  (put 'make-from-real-imag '(rect) make-from-real-imag)
 )
 
 (define (apply-generic op . args)

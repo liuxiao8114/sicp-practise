@@ -1,2 +1,3 @@
 (define (get-record file)
-  ())
+  ()
+)
