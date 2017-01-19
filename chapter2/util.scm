@@ -1,3 +1,7 @@
+(define tree-test-1 (list 1 (list 2 (list 3 4 5))))
+(define tree-test-2 (list 1 2 3 4 5))
+(define tree-test-3 (list (list 1 2 3 4) (list 4 5 6 6) (list  6 7 8 9)))
+
 (define (inc x) (+ x 1))
 (define (square x) (* x x))
 (define (cube x) (* x x x))
@@ -114,7 +118,6 @@
   )
 )
 
-(define operartion-table (make-table))
+(define operation-table (make-table))
 (define get (operation-table 'lookup-proc))
 (define put (operation-table 'insert-proc!))
-

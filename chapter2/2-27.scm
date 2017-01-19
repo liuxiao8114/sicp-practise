@@ -1,0 +1,23 @@
+(define (deep-reverse l)
+  (define (iter l result)
+    (cond ((null? l) result)
+          ((not (pair? (car l))) (iter (cdr l) (cons (car l) result)))
+          (else (iter (cdr l) (cons (iter (car l) '()) result)))
+    )
+  )
+  (iter l '())
+)
+
+(define (deep-reverse-2 l)
+  (define (iter l result)
+    (cond ((null? l) result)
+          ((not (pair? l)) ())
+          (else (iter (cdr l) (cons (iter (car l) '()) result)))
+    )
+  )
+  (iter l '())
+)
+
+(define x (list (list 1 2 (list 3 4)) (list (list 5) (list 6 7 8))))
+
+(deep-reverse-2 x)

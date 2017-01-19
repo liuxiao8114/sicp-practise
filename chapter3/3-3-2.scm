@@ -13,17 +13,17 @@
 
 (define (front-queue queue)
   (if(empty-queue? queue)
-    (error "FRONT called with an empty queue" queue)
-    (car (front-ptr queue))
+    (error "FRONT called with an empty queue" q)
   )
 )
 
 (define (insert-queue! q i)
   (let ((new-pair (cons i '())))
-    (cond ((empty-queue? q) ((set-front-ptr! q new-pair) (set-rear-ptr! q new-pair)))
+    (cond ((empty-queue? q) ((set-front-ptr! q new-pair) (set-rear-ptr! q new-pair) q))
           (else
             (set-cdr! (rear-ptr q) new-pair)
             (set-rear-ptr! q new-pair)
+            q
           )
     )
   )
