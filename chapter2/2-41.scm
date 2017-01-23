@@ -12,4 +12,4 @@
   )
 )
 
-(three-list 5)
+(three-list 50)
