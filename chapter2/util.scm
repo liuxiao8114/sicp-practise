@@ -83,10 +83,31 @@
 
 
 ;; from 3.3, used in 2-4
+
+(define (equal? a b)
+  (cond ((and (pair? a) (pair? b))
+          (if (eq? (car a) (car b))
+            (equal? (cdr a) (cdr b))
+            false
+          )
+        )
+        ((or (pair? a) (pair? b)) false)
+        ((eq? a b) true)
+        (else false)
+  )
+)
+
+(define (assoc key records)
+  (cond ((null? records) false)
+        ((equal? key (caar records)) (car records))
+        (else (assoc key (cdr records)))
+  )
+)
+
 (define (make-table)
   (let ((local-table (list '*table*)))
     (define (lookup key-1 key-2)
-      (let ((subtable (assoc key-1 (car local-table))))
+      (let ((subtable (assoc key-1 (cdr local-table))))
         (if subtable
           (let ((record (assoc key-2 (cdr subtable))))
             (if record
@@ -103,8 +124,11 @@
         (if subtable
           (let ((record (assoc key-2 (cdr subtable))))
             (if record
-              (set-cdr ))
+              (set-cdr! record value)
+              (set-cdr! subtable (cons (cons key-2 value) (cdr subtable)))
+            )
           )
+          (set-cdr! local-table (cons (list key-1 (cons key-2 value)) (cdr local-table)))
         )
       )
     )
@@ -118,6 +142,6 @@
   )
 )
 
-(define operation-table (make-table))
+(define operation-table (make-table)) ;<-- warn: this is diff from (define operation-table make-table)
 (define get (operation-table 'lookup-proc))
 (define put (operation-table 'insert-proc!))

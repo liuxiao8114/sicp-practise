@@ -1,0 +1,103 @@
+(load "2-3-2.scm")
+
+(define (reverse l)
+  (define (iter i r)
+    (if (null? i)
+      r
+      (iter (cdr i) (cons (car i) r))
+    )
+  )
+  (iter l '())
+)
+
+(define (length l)
+  (define (iter i r)
+    (if (null? i)
+      r
+      (iter (cdr i) (+ 1 r))
+    )
+  )
+  (iter l 0)
+)
+
+(define (sum?-a expr)
+  (and (pair? expr) (eq? '+ (cadr expr)))
+)
+
+(define (make-sum-a a1 a2)
+  (list (a1 '+ a2))
+)
+
+(define (addend-a a) (car a))
+(define (augend-a a) (caddr a))
+
+(define (sum?-b expr)
+  (define (iter i)
+    (cond ((null? i) false)
+          ((eq? '+ (car i)) true)
+          (else (iter (cdr i)))
+    )
+  )
+  (and (pair? expr) (iter expr))
+)
+
+(define (product?-b expr)
+  (define (iter i)
+    (cond ((null? i) true)
+          ((eq? '+ (car i)) false)
+          (else (iter (cdr i)))
+    )
+  )
+  (and (pair? expr) (iter expr))
+)
+
+(define (add-iter-b items)
+  (define (iter i r)
+    (cond ((null? i) (error "how can you see this?!"))
+          ((eq? '+ (car i)) (cons (reverse r) (cdr i)))
+          (else (iter (cdr i) (cons (car i) r)))
+    )
+  )
+  (iter items '())
+)
+
+(define (addend-b a)
+  (let ((result (car (add-iter-b a))))
+    (if(and (pair? result) (= 1 (length result)))
+      (car result)
+      result
+    )
+  )
+)
+(define (augend-b a) (cdr (add-iter-b a)))
+
+(define (make-sum-a a1 a2)
+  (list (a1 '+ a2))
+)
+
+(define (make-sum-b a1 a2)
+  (list (a1 '+ a2))
+)
+
+(define (make-product-b a1 a2)
+  (list (a1 '* a2))
+)
+
+(define (multiplier-b p) (car p))
+(define (multiplicand-b p) (caddr p))
+
+(define (deriv exp var)
+  (cond ((number? exp) 0)
+        ((variable? exp)
+          (if (same-variable? exp var) 1 0))
+        ((sum?-b exp)
+          (make-sum-b (deriv (addend-b exp) var) (deriv (augend-b exp) var)))
+        ((product?-b exp)
+          (make-sum-b
+            (make-product-b (multiplier-b exp) (deriv (multiplicand-b exp) var))
+            (make-product-b (multiplicand-b exp) (deriv (multiplier-b exp) var))))
+        (else (error "this is liu xiao"))
+  )
+)
+
+(deriv '(x * x) 'x)

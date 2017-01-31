@@ -98,7 +98,7 @@
 
 ;(deriv '(+ x 3) 'x)
 ;(deriv '(* x y) 'x)
-(deriv '(? (+ (* 2 x) y) 10) 'x)
+;(deriv '(? (+ (* 2 x) y) 10) 'x)
 ;(deriv '(* x y (+ x 3)) 'x)
 ;(make-product-improve (list 'x 'y) 'z '5)
 ;(make-product-improve (list 10 '(? (+ x y)) 2))

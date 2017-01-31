@@ -1,0 +1,16 @@
+(define (element-of-set? x s)
+  (cond ((null? s) false)
+        ((equal? x (car s)) true)
+        (else (element-of-set? x (cdr s)))
+  )
+)
+
+(define (union-set s1 s2)
+  (cond ((null? s1) s2)
+        ((null? s2) s1)
+        ((element-of-set? (car s1) s2) (union-set (cdr s1) s2))
+        (else (cons (car s1) (union-set (cdr s1) s2)))
+  )
+)
+
+(union-set (list 1 2 3 4) (list 2 3 4 5 6))

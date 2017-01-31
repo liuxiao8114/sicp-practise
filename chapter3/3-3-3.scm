@@ -5,6 +5,7 @@
   )
 )
 
+;线性表顺序查找
 (define (lookup key table)
   (let ((record (assoc key (cdr table))))
     (if record
@@ -23,10 +24,12 @@
   )
 )
 
+;二维表格&数组 n*n
+;(list '*table* (list 'math (cons '+ 43) (cons '- 45)) (list 'letter (cons 'a 97) (cons 'b 98)))
 (define (lookup-v2 key1 key2 table)
-  (let ((suitable (assoc key1 (cdr table))))
+  (let ((suitable (assoc key1 (cdr table)))) ;<-- 根据key1查找对应的子列
     (if suitable
-      (let (record (assoc key2 (cdr suitable)))
+      (let (record (assoc key2 (cdr suitable))) ;<--如果找到,则在该子列中查找key2关键字的记录
         (if record)
           (cdr record)
           false
@@ -45,7 +48,8 @@
           (set-cdr! suitable (cons (cons key2 value) (cdr suitable)))
         )
       )
-      (set-cdr! table (c))
+      ;(set-cdr! table (list (cons key1 (cons key2 value))))
+      (set-cdr! table (cons (list key1 (cons key2 value)) (cdr table))) ;<--子列第一个元素为key1(列名)，从第二个元素开始是各个元素
     )
   )
 )

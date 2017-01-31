@@ -1,93 +1,84 @@
-(load "util.scm")
+;叶子构造函数，选择函数（叶值，叶权重）make-leaf symbol-leaf weight-leaf
+;判断叶子 leaf?
+;生成huff树 make-code-tree
+;左分支和右分支 left-b right-b
+;权重和值 weight symbol
+;解构值 decode
+;初始符号权重序列 make-leaf-set
 
-(define (add-complex z1 z2)
-  (make-from-real-imag (+ (real-part z1) (real-part z2))
-    (+ (imag-part z1) (imag-part z2))
+(define (make-leaf symbol weight)
+  (list 'leaf symbol weight))
+
+(define (leaf? object)
+  (eq? (car object) 'leaf))
+
+(define (symbol-leaf x) (cadr x))
+(define (weight-leaf x) (caddr x))
+
+(define (make-code-tree left right)
+  (list
+    left
+    right
+    (append (symbols left) (symbols right))
+    (+ (weight left) (weight right))
   )
 )
 
-(define (real-part-rect z) (car z))
+(define (left-b tree) (car tree))
+(define (right-b tree) (cadr tree))
 
-(define (imag-part-rect z) (cadr z))
-
-(define (magnitude-rect z)
-  (sqrt (+ (square (real-part-rect z)) (square (imag-part-rect z)))))
-
-(define (angle-rect z)
-  (atan (imag-part-rect z) (real-part-rect z)))
-
-(define (make-from-real-imag-rect x y) (cons x y))
-
-(define (make-from-mag-ang-rect r a)
-  (cons (* r (cos a)) (* r (sin a))))
-
-(define (magnitude-pola z) (car z))
-(define (angle-pola z) (cadr z))
-
-(define (real-part-pola z) (* (magnitude-pola z) (cos (angle-pola z))))
-
-(define (imag-part-pola z) (* (magnitude-pola z) (sin (angle-pola z))))
-
-(define (make-from-real-imag-pola x y) (cons (sqrt (+ (square x) (square y))) (atan y x)))
-
-(define (attach-tag type-tag contents)
-  (cons type-tag contents))
-
-(define (type-tag datum)
-  (if (pair? datum)
-    (car datum)
-    (error "Bad tagged datum")
+(define (symbols tree)
+  (cond ((null? tree) '())
+        ((leaf? tree) (list (symbol-leaf tree)))
+        (else (caddr tree))
   )
 )
 
-(define (contents datum)
-  (if (pair? datum)
-    (cadr datum)
-    (error "Bad contented datum")
+(define (weight tree)
+  (cond ((null? tree) 0)
+        ((leaf? tree) (weight-leaf tree))
+        (else (cadddr tree))
+
   )
 )
 
-(define operation-table (make-table))
-(define get (operation-table 'lookup-proc))
-(define put (operation-table 'insert-proc))
-
-(define (install-rect-package)
-  (define (real-part z) (car z))
-  (define (imag-part z) (cadr z))
-  (define (make-from-real-imag x y) (cons x y))
-  (define (magnitude z)
-    (sqrt (+ (square (real-part z)) (square (imag-part z)))))
-  (define (angle z)
-    (atan (imag-part z) (real-part z)))
-
-  (define (tag x) (attach-tag 'rect x))
-  (put 'real-part '(rect) real-part)
-  (put 'imag-part '(rect) imag-part)
-  (put 'magnitude '(rect) magnitude)
-  (put 'angle '(rect) angle)
-  (put 'make-from-real-imag '(rect) make-from-real-imag)
-)
-
-(define (apply-generic op . args)
-  (let ((type-tags (map type-tag args)))
-    (let ((proc (get op type-tags)))
-      (if proc
-        (apply proc (map contents args))
-        (error "No methods")
+(define (decode bits tree)
+  (define (decode-1 bits current-branch)
+    (if (null? bits)
+      '()
+      (let ((next-branch
+              (choose-branch (car bits) current-branch)))
+        (if (leaf? next-branch)
+          (cons (symbol-leaf next-branch) (decode-1 (cdr bits) tree))
+          (decode-1 (cdr bits) next-branch)
+        )
       )
+    )
+  )
+  (decode-1 bits tree)
+)
+
+(define (choose-branch bit branch)
+  (cond ((= bit 0) (left-b branch))
+        ((= bit 1) (right-b branch))
+        (else (error "bad bit"))
+  )
+)
+
+(define (adjoin-set-huff x set)
+  (cond ((null? set) (list x))
+        ((> (weight x) (weight (car set))) (cons x set))
+        (else (cons (car set) (adjoin-set-huff x (cdr set))))
+  )
+)
+
+(define (make-leaf-set pairs)
+  (if (null? pairs)
+    '()
+    (let ((pair (car pairs)))
+      (adjoin-set-huff (make-leaf (car pair) (cadr pair)) (make-leaf-set (cdr pairs)))
     )
   )
 )
 
-(define (real-part z) (apply-generic 'real-part z))
-(define (imag-part z) (apply-generic 'imag-part z))
-(define (magnitude z) (apply-generic 'magnitude z))
-(define (angle z) (apply-generic 'angle z))
-
-(define (make-from-real-imag x y)
-  ((get 'make-from-real-imag 'rect) x y))
-
-(define (make-from-mag-ang r a)
-  ((get 'make-from-mag-ang 'pola) r a))
-
-(real-part (make-from-real-imag 1 2))
+;(make-leaf-set '((c 1) (d 1) (b 2) (a 4)))

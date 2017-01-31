@@ -1,4 +1,5 @@
-(load "2-3-4.scm")
+(load "2-3-2.scm")
+(load "2-4-3.scm")
 
 (define (deriv exp var)
   (cond ((number? exp) 0)
@@ -7,16 +8,12 @@
   )
 )
 
-(define (operator exp)
-  (car exp))
-
+(define (operator exp) (car exp))
 (define (operands exp) (cdr exp))
 
 (define (install-sum-package)
-  
-    (define (addend exp) (car exp))
+  (define (addend exp) (car exp))
   (define (augend exp) (cadr exp))
-
   (define (make-sum x y)
     (cond ((and (number? x) (number? y)) (+ x y))
           ((=number? x 0) y)
@@ -32,8 +29,10 @@
     (lambda (exp var)
       (make-sum (deriv (addend exp) var)
         (deriv (augend exp) var))
+    )
   )
-'done)
+  'done
+)
 
 (define (make-sum x y)
   ((get 'make-sum '+) x y))
@@ -41,3 +40,6 @@
 (define (addend sum)
   ((get 'addend '+) sum))
 
+;(deriv '(+ (* 2 x) (+ x 1) 1) 'x)
+(install-sum-package)
+(deriv '(+ x 1) 'x)
