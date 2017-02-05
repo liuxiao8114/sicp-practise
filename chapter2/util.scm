@@ -44,10 +44,16 @@
 
 (define tolerance 0.00001)
 
+(define (close-enough? a b)
+  (> tolerance (abs (- a b))))
+
+(define (average-damp f)
+  (lambda (x) (average x (f x))))
+
 (define (fix-point f first-guess)
   (define (try guess)
     (let ((next (f guess)))
-      (if (close-enough? guess (f guess))
+      (if (close-enough? guess next)
         guess
         (try next)
       )
@@ -56,8 +62,15 @@
   (try first-guess)
 )
 
+;传入一个y 返回y和x/y的平均值的过程
+;求两个数的平均值，后一个数是用x除以前一个数
+;(define (sqrt x)
+;  (fix-point (lambda (y) (average y (/ x y))) 1.0))
+
 (define (sqrt x)
-  (fix-point (average-damp (lambda y (/x y))) 1.0))
+  (fix-point (average-damp (lambda (y) (/ x y))) 1.0))
+  ;(fix-point (lambda (z) (average z ((lambda y (/ x y)) z))) 1.0)
+  ;(fix-point (lambda (z) (average z (/ x z))) 1.0)
 
 (define (append list1 list2)
   (if (null? list1)

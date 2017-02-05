@@ -21,12 +21,13 @@
   )
 )
 
+;(apply-generic 'rect '((rect 1 2) (rect 2 3) (ang 3 4)))
 (define (apply-generic op . args)
   (let ((type-tags (map type-tag args)))
     (let ((proc (get op type-tags)))
       (if proc
         (apply proc (map contents args))
-        (error "No methods")
+        (error "No methods--" op)
       )
     )
   )
@@ -34,7 +35,7 @@
 
 (define (install-rect-package)
   (define (real-part z) (car z))
-  (define (imag-part z) (cadr z))
+  (define (imag-part z) (cdr z))
   (define (make-from-real-imag x y) (cons x y))
   (define (magnitude z)
     (sqrt (+ (square (real-part z)) (square (imag-part z)))))
@@ -46,7 +47,9 @@
   (put 'imag-part '(rect) imag-part)
   (put 'magnitude '(rect) magnitude)
   (put 'angle '(rect) angle)
-  (put 'make-from-real-imag '(rect) make-from-real-imag)
+;  (put 'make-from-real-imag '(rect) make-from-real-imag)
+;^-- wrong! 这里的标志项'rect与上面的'(rect)不同之处在于：带括号是为了适应多参数版本(),如运算中出现的多个对象进行一次性提取
+  (put 'make-from-real-imag 'rect (lambda (x y) (tag (make-from-real-imag x y)))) ; <-- why not used same make-complex but make-from-real-imag
   'done
 )
 
@@ -62,5 +65,7 @@
   ((get 'make-from-mag-ang 'pola) r a))
 
 ;(real-part (make-from-real-imag 1 2)) <-- wrong
-(install-rect-package)
-(imag-part (list 'rect 1 2))
+
+;test case
+;(install-rect-package)
+;(imag-part (list 'rect 1 2))

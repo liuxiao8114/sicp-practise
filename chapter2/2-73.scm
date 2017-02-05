@@ -1,5 +1,8 @@
-(load "2-3-2.scm")
 (load "2-4-3.scm")
+
+(define (=number? x y)
+  (and (number? x) (number? y) (= x y))
+)
 
 (define (deriv exp var)
   (cond ((number? exp) 0)
@@ -18,7 +21,7 @@
     (cond ((and (number? x) (number? y)) (+ x y))
           ((=number? x 0) y)
           ((=number? y 0) x)
-          (else (attach-tag '+ x y))
+          (else (attach-tag '+ (list x y)))
     )
   )
 
@@ -42,4 +45,4 @@
 
 ;(deriv '(+ (* 2 x) (+ x 1) 1) 'x)
 (install-sum-package)
-(deriv '(+ x 1) 'x)
+(deriv (make-sum 1 'x) 'x)
