@@ -5,7 +5,12 @@
 
 (define rand
   (let ((x random-init))
-    (lambda () (set! x (random-update x)) x)
+    (lambda ()
+    (if (= x 0)
+      ()
+      (set! x (random-update x))
+    )
+    x
   )
 )
 
@@ -25,8 +30,4 @@
   (iter trials 0)
 )
 
-(define (bad-test)
-  (let ((x1) (random-update init))
-
-  )
-)
+(estimate-pi 10000)

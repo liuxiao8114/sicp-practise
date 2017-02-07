@@ -40,6 +40,13 @@
 
 (define tolerance 0.00001)
 
+(define (close-enough? a b)
+  (> tolerance (abs (- a b))))
+
+(define (average-damp f)
+  (lambda (x) (average x (f x)))
+)
+
 (define (fix-point f first-guess)
   (define (try guess)
     (let ((next (f guess)))
@@ -53,7 +60,7 @@
 )
 
 (define (sqrt x)
-  (fix-point (average-damp (lambda y (/x y))) 1.0))
+  (fix-point (average-damp (lambda (y) (/ x y))) 1.0))
 
 (define (append list1 list2)
   (if (null? list1)

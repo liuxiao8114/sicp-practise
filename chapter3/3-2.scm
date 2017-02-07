@@ -13,6 +13,19 @@
   (mf 0)
 )
 
-(define s (make-monitored square))
+
+(define (make-monitored-2 f)
+  (define (mf count)
+    (lambda (x)
+      (cond ((eq? x 'how?) count)
+            ((eq? x 'reset) (begin (set! count 0) count))
+            (else (begin (set! count (+ 1 count)) (f x)))
+      )
+    )
+  )
+  (mf 0)
+)
+
+(define s (make-monitored-2 square))
 
 (s 10)
