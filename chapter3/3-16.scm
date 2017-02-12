@@ -7,14 +7,7 @@
   )
 )
 
-;((a b) (c d) (e f))
-;(count-pairs (list (list 'a 'b) (list 'c 'd) (list 'e 'f)))
-;(count-pairs (list 'a 'b 'c))
-(count-pairs (list (list 'a 'd) 'b 'c))
+(define two (list 1 2))
+(define one (cdr two))
 
-
-;
-;
-;
-;
-;
+(count-pairs (cons one two))
