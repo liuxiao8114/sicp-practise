@@ -1,6 +1,6 @@
-(define (cons-self x y)
-  (define (set-x! v) x v)
-  (define (set-y! v) y v)
+(define (cons x y)
+  (define (set-x! v) (set! x v))
+  (define (set-y! v) (set! y v))
 
   (define (dispatch z)
     (cond ((eq? z 'car) x)
@@ -12,9 +12,9 @@
   dispatch
 )
 
-(define (car-self z)
-  (z 'car))
-(define (cdr-self z)
-  (z 'cdr))
+(define (car z) (z 'car))
+(define (cdr z) (z 'cdr))
+(define (set-car! z) (z 'set-car!))
+(define (set-cdr! z) (z 'set-cdr!))
 
-(car-self (cons-self 1 2))
+(car (cons 1 2))
