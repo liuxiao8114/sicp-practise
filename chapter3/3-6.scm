@@ -7,6 +7,8 @@
   (put 'generate generate))
 
 (define install-reset-package
-  (define reset
-    ())
+  (define reset (lambda (x) x))
   (put 'reset reset))
+
+;(rand 'generate)
+;((rand 'reset) 100)
