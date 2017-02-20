@@ -45,11 +45,11 @@
 
     (define (set-front-ptr! i) (set! front-ptr i))
     (define (set-rear-ptr! i) (set! rear-ptr i))
-    (define empty-queue (null? front-ptr))
+    (define (empty-queue) (null? front-ptr))
 
     (define (insert-queue! i)
       (let ((new-pair (cons i '())))
-        (if empty-queue
+        (if (empty-queue)
           (begin (set-front-ptr! new-pair)
             (set-rear-ptr! new-pair)
             front-ptr
@@ -62,17 +62,19 @@
       )
     )
 
-    (define (delete-queue! q i)
-      (if(empty-queue q)
-        (error "empty queue! --" q)
-        (begin (set-front-ptr! q (cdr (front-ptr q))) q)
+    (define (delete-queue!)
+      (if (empty-queue)
+        (error "empty queue!")
+        (begin (set-front-ptr! (cdr front-ptr)) front-ptr)
       )
     )
 
     (define (dispatch m)
-      (cond ((eq? m 'insert-queue!) (lambda (i) (insert-queue! i)))
-            ((eq? m 'delete-queue!) (lambda (q) (delete-queue! q)))
-            ((eq? m 'empty-queue) (lambda (q) (empty-queue q)))
+      (cond ((eq? m 'insert-queue!) insert-queue!)
+            ((eq? m 'delete-queue!) delete-queue!)
+            ((eq? m 'empty-queue) empty-queue)
+            ((eq? m 'front-ptr) front-ptr)
+            ((eq? m 'rear-ptr) rear-ptr)
       )
     )
     dispatch
@@ -80,7 +82,10 @@
 )
 
 (define insert-queue (lambda (q i) ((q 'insert-queue!) i)))
-(define delete-queue (lambda (q) ((q 'delete-queue!) q)))
+(define delete-queue (lambda (q) ((q 'delete-queue!))))
+(define empty-queue (lambda (q) ((q 'empty-queue))))
+(define front-ptr (lambda (q) (q 'front-ptr)))
+(define rear-ptr (lambda (q) (q 'rear-ptr)))
 
 (define q1 (make-queue-a))
 (insert-queue q1 'a)
