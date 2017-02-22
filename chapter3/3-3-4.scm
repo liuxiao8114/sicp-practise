@@ -1,86 +1,49 @@
-(define (call-each p)
-  (if (null? p)
+(load "util.scm")
+(load "3-3-4-1.scm") ;defined wire
+(load "3-3-4-2.scm") ;defined agenda
+(load "3-3-4-3.scm") ;defined varies of gates
+
+(define (propagate)
+  (if (empty-agenda? the-agenda)
     'done
-    (begin (car p) (call-each (cdr p)))
-  )
-)
-
-(define (make-wire)
-  (let ((signal-value 0) (action-proc '()))
-    (define (set-signal! new-value)
-      (if (not (= signal-value new-value))
-        (begin (set! signal-value new-value)
-          (call-each action-proc)
-          'done
-        )
-      )
-    )
-    (define (accept-action-proc! proc)
-      (set! action-proc (cons proc action-proc))
-      (proc)
-    )
-    (define (dispatch m)
-      (cond ((eq? m 'get-signal) signal-value)
-            ((eq? m 'set-signal!) set-signal!)
-            ((eq? m 'add-action!) accept-action-proc!)
-            (else error "Unknown oeration -- WIRE " m)
-      )
-    )
-    dispatch
-  )
-)
-
-(define (get-signal wire)
-  (wire 'get-signal))
-
-(define (set-signal wire new-value) ((wire 'set-signal!) new-value))
-
-(define (add-action wire proc) ((wire 'add-action!) proc))
-
-(define (after-delay delay action)
-  (add-to-agenda! (+ delay (current-time the-agenda)) action the-agenda)
-)
-
-
-
-(define (logical-not s)
-  (cond ((= s 1) 0)
-        ((= s 0) 1)
-        (else (error "Invalid signal -- " s))
-  )
-)
-
-(define (inverter input output)
-  (define (invert-input)
-    (let ((new-value (logical-not (get-signal input))))
-      (after-delay
-        inverter-delay
-        (lambda () (set-signal output new-value))
-      )
+    (let ((first-item (frist-agenda-item the-agenda)))
+      (first-item)
+      (remove-first-agenda-item! the-agenda)
+      (propagate)
     )
   )
-  (add-action input invert-input)
 )
 
-(define (number0? num)
-  (and (number? num) (= 0 num)))
-
-(define (number1? num)
-  (and (number? num) (= 1 num)))
-
-(define (logical-and a1 a2)
-  (cond ((or (number0 a1) (number0 a2)) 0)
-        ((and (number1 a1) (number1 a2)) 1)
-        (else (error "Invalid signal -- " s))
-  )
-)
-
-(define (and-gate a1 a2 output)
-  (define (and-input)
-    (let ((new-value (logical-and (get-signal a1) (get-signal a2))))
-      (after-delay and-delay (lambda () (set-signal output new-value)))
+(define (probe name wire)
+  (add-action!
+    wire
+    (lambda ()
+      (newline)
+      (display name)
+      (display "  ")
+      (display (current-time the-agenda))
+      (display " New-Value = ")
+      (display (get-signal wire))
     )
   )
-  (add-action a1 and-input)
-  (add-action a2 and-input)
 )
+
+;test case
+
+(define inverter-delay 2)
+(define and-delay 3)
+(define or-delay 5)
+
+(define input-1 (make-wire))
+(define input-2 (make-wire))
+(define sum (make-wire))
+(define carry (make-wire))
+
+(probe 'sum sum)
+(probe 'carry carry)
+
+(half-adder input-1 input-2 sum carry)
+
+(set-signal! input-1 1)
+
+(propagate)

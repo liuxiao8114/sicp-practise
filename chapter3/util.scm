@@ -2,6 +2,12 @@
 (define (square x) (* x x))
 (define (cube x) (* x x x))
 
+(define (number0? num)
+  (and (number? num) (= 0 num)))
+
+(define (number1? num)
+  (and (number? num) (= 1 num)))
+
 (define (average a b)
   (/ (+ a b) 2))
 
