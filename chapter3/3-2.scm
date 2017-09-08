@@ -29,3 +29,21 @@
 (define s (make-monitored-2 square))
 
 (s 10)
+
+
+(define (make-monitored-3 f)
+  ((lambda (count)
+    (lambda (x)
+      (cond ((eq? x 'how?) count)
+            ((eq? x 'reset) (begin (set! count 0) count))
+            (else (begin (set! count (+ 1 count)) (f x)))
+      )
+    )
+  ) 0)
+)
+
+;(((lambda (x) (lambda (y) (+ x y))) 1) 2)
+
+(define s (make-monitored-3 square))
+
+(s 10)

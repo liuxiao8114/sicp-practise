@@ -1,14 +1,14 @@
+(load "util.scm")
+
 (define (rand type)
-  (get type))
+  (get 'random type))
 
 (define install-generate-package
-  (define generate
-    ())
-  (put 'generate generate))
+  (put 'random 'generate (lambda (x) (random x))))
 
 (define install-reset-package
-  (define reset (lambda (x) x))
-  (put 'reset reset))
+  (put 'random 'reset (lambda (x) x)))
 
-;(rand 'generate)
+;(random 10)
+((rand 'generate) 100)
 ;((rand 'reset) 100)

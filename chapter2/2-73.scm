@@ -1,5 +1,11 @@
 (load "2-4-3.scm")
 
+; a)数据导向区分操作类型和表达式类型
+; 在number和variable下，操作类型的表达式(计算过程)已经是常量,没有必要增加导向矩阵的内容
+
+;        +   -   *   /
+; deriv
+
 (define (=number? x y)
   (and (number? x) (number? y) (= x y))
 )

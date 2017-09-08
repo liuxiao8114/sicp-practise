@@ -14,22 +14,21 @@
   (iter trials 0)
 )
 
-;(define (rect-grand x1 x2 y1 y2)
-;  (* (- x2 x1) (- y2 y1)))
-
 (define (p x y)
-  (not (< 9 (+ (square (- x 5)) (square (- y 7)))))
+  (not (< 1.0 (+ (square x) (square y))))
 )
 
-(define (estimate-integral p x1 x2 y1 y2 count)
-  (define (round-test)
-    (let ((randx (random-in-range x1 x2))
-          (randy (random-in-range y1 y2)))
-      (p randx randy)
-    )
-  )
-  ;正方形面积是其内切圆的4倍
-  (* 4 (exact->inexact (monte-cario count round-test)))
+(define (calculate-pi p x1 x2 y1 y2 count)
+  (define (estimate-integral)
+    (p (random-in-range x1 x2) (random-in-range y1 y2)))
+
+  (* (exact->inexact (monte-cario count estimate-integral)) 4)
 )
 
-(estimate-integral p 2 8 4 10 10000)
+(calculate-pi p -1.0 1.0 -1.0 1.0 10000)
+
+;(define (test exp) (cond ((eq? #t exp) 'yes!) (else 'no!)))
+;(test (not (> 1 0)))
+
+;(> 3 2)
+;(p (random-in-range -1.0 1.0) (random-in-range -1.0 1.0))
