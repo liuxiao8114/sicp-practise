@@ -1,0 +1,10 @@
+(define (loop l)
+  (define (iter x temp)
+    (cond ((not (pair? x)) #f)
+          ((memq (cdr x) temp) #t)
+          (else (iter (cdr x) (cons (car x) temp)))
+    )
+  )
+
+  (iter l '())
+)
