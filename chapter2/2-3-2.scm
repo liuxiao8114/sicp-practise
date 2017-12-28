@@ -33,6 +33,19 @@
   )
 )
 
+(define (make-sum-improve items . params)
+  (define (make-sum-list x)
+    (accumulate make-sum 0 x))
+
+  (if (null? params)
+    (if(and (pair? items) (variable? (car items)))
+      (make-sum-list items)
+      (error "at least two params needed")
+    )
+    (make-sum items (make-sum-list params))
+  )
+)
+
 (define (make-product m1 m2)
   (cond ((and (number? m1) (number? m2)) (* m1 m2))
         ((or (number0 m1) (number0 m2)) 0)
@@ -42,19 +55,21 @@
   )
 )
 
+;2017/1/25 年初的我就这么nb >_< 求值表达式时还是有问题>_<
+;    (make-product-improve '(+ x 3) 1)
+;<=> (accumulate make-product 1 '(+ x 3 1))
+;result: (* + (* x 3))
 (define (make-product-improve items . params)
   (define (deal-list s)
     (accumulate make-product 1 s)
   )
   (if(null? params)
-    (if(pair? items)
+    (if(and (pair? items) (variable? (car items)))
       (deal-list items)
       (error "need two params at least")
     )
-    (if(pair? items)
-      (deal-list (append items params))
-      (deal-list (cons items params))
-    )
+    ;2017/12/21 先累积params,形成两个参数做最后make-product
+    (make-product items (deal-list params))
   )
 )
 
@@ -62,6 +77,7 @@
   (and (pair? x) (eq? (car x) '+)))
 
 (define (addend a) (cadr a))
+;2017/12/20 fixed improve-ver
 (define (augend a) (caddr a))
 
 (define (product? x)
@@ -84,9 +100,9 @@
         ((variable? exp)
           (if (same-variable? exp var) 1 0))
         ((sum? exp)
-          (make-sum (deriv (addend exp) var) (deriv (augend exp) var)))
+          (make-sum-improve (deriv (addend exp) var) (deriv (augend exp) var)))
         ((product? exp)
-          (make-sum
+          (make-sum-improve
             (make-product-improve (multiplier exp) (deriv (multiplicand exp) var))
             (make-product-improve (multiplicand exp) (deriv (multiplier exp) var))))
         ((exponentiation? exp)

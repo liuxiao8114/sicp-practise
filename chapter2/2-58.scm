@@ -25,11 +25,31 @@
 )
 
 (define (make-sum-a a1 a2)
-  (list (a1 '+ a2))
+  (cond ((and (number? a1) (number? a2)) (+ a1 a2))
+        ((number0 a1) a2)
+        ((number0 a2) a1)
+        (else (list a1 '+ a2))
+  )
 )
 
 (define (addend-a a) (car a))
 (define (augend-a a) (caddr a))
+
+(define (product?-a exp)
+  (and (pair? exp) (eq? '* (cadr exp)))
+)
+
+(define (make-product-a m1 m2)
+  (cond ((and (number? m1) (number? m2)) (* m1 m2))
+        ((or (number0 m1) (number0 m2)) 0)
+        ((number1 m1) m2)
+        ((number1 m2) m1)
+        (else (list m1 '* m2))
+  )
+)
+
+(define (multiplier-a p) (car p))
+(define (multiplicand-a p) (caddr p))
 
 (define (sum?-b expr)
   (define (iter i)
@@ -71,33 +91,43 @@
 )
 (define (augend-b a) (cdr (add-iter-b a)))
 
-(define (make-sum-a a1 a2)
-  (list (a1 '+ a2))
-)
-
 (define (make-sum-b a1 a2)
-  (list (a1 '+ a2))
+  (list a1 '+ a2)
 )
 
 (define (make-product-b a1 a2)
-  (list (a1 '* a2))
+  (list a1 '* a2)
 )
 
 (define (multiplier-b p) (car p))
 (define (multiplicand-b p) (caddr p))
 
-(define (deriv exp var)
+(define (deriv-a exp var)
   (cond ((number? exp) 0)
         ((variable? exp)
           (if (same-variable? exp var) 1 0))
-        ((sum?-b exp)
-          (make-sum-b (deriv (addend-b exp) var) (deriv (augend-b exp) var)))
-        ((product?-b exp)
-          (make-sum-b
-            (make-product-b (multiplier-b exp) (deriv (multiplicand-b exp) var))
-            (make-product-b (multiplicand-b exp) (deriv (multiplier-b exp) var))))
+        ((sum?-a exp)
+          (make-sum-a (deriv-a (addend-a exp) var) (deriv-a (augend-a exp) var)))
+        ((product?-a exp)
+          (make-sum-a
+            (make-product-a (multiplier-a exp) (deriv-a (multiplicand-a exp) var))
+            (make-product-a (multiplicand-a exp) (deriv-a (multiplier-a exp) var))))
         (else (error "this is liu xiao"))
   )
 )
 
-(deriv '(x * x) 'x)
+(define (deriv-b exp var)
+  (cond ((number? exp) 0)
+        ((variable? exp)
+          (if (same-variable? exp var) 1 0))
+        ((sum?-b exp)
+          (make-sum-b (deriv-b (addend-b exp) var) (deriv-b (augend-b exp) var)))
+        ((product?-b exp)
+          (make-sum-b
+            (make-product-b (multiplier-b exp) (deriv-b (multiplicand-b exp) var))
+            (make-product-b (multiplicand-b exp) (deriv-b (multiplier-b exp) var))))
+        (else (error "this is liu xiao"))
+  )
+)
+
+(deriv-a '(x * x) 'x)

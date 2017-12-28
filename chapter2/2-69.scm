@@ -34,12 +34,17 @@
   (cond ((= 0 (length tree)) '())
         ((= 1 (length tree)) (car tree))
         (else (let ((new-sub-tree (make-code-tree (car tree) (cadr tree)))
-                  (remain-tree (cddr tree)))
+                   (remain-tree (cddr tree)))
               (successive-merge-a (adjoin-set-huff new-sub-tree remain-tree))))
   )
 )
 
 ;why this doesn't work?
+;2017/12/27 区别在于:
+;(successive-merge-a (adjoin-set-huff new-sub-tree remain-tree))))
+; 先合并,再重新生成新的顺序,再取最小两个生成新树
+;(adjoin-set-huff new-sub-tree (successive-merge-b remain-tree))))
+; 先继续取当前的最小两个生成新树,再重新排序
 (define (successive-merge-b tree)
   (cond ((= 0 (length tree)) '())
         ((= 1 (length tree)) (car tree))
