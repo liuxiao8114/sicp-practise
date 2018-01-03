@@ -33,11 +33,15 @@
   )
 )
 
+;2018/1/3 实际上，下面的这些测试全部报错
+;问题在于apply-generic函数用于解包type为'(rect) 这种类型, 所以args本身必须为pair类型(如:(list 'rect 1 2))
+;在正确取得proc( + )之后,调用apply的第二个参数同样也是pair类型, 相当于(+ '(;pair类型)), 所以必然报错
 (put 'real-part '(rect) +)
 ;(apply (get 'real-part '(rect)) '(1 2))
 ;(apply-generic 'real-part (list 'rect 1 2))
-
-(apply-generic 'real-part (list (list 'rect 1 2) (list 'rect 2 3)))
+;(apply (get 'real-part '(rect)) '(1 2))
+;(('rect 1 2) ('rect 2 3))
+;(apply-generic 'real-part (list (list 'rect 1 2) (list 'rect 2 3)))
 
 (define (install-rect-package)
   (define (real-part z) (car z))
@@ -70,7 +74,7 @@
 
 (define (make-from-mag-ang r a)
   ((get 'make-from-mag-ang 'pola) r a))
-
+;(map contents (list (list 'rect 1 2)))
 ;(apply + '((1 2)))
 ;test case
 ;(install-rect-package)

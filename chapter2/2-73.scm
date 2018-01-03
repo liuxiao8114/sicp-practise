@@ -10,6 +10,12 @@
   (and (number? x) (number? y) (= x y))
 )
 
+(define (variable? x)
+  (symbol? x))
+
+(define (same-variable? v1 v2)
+  (and (variable? v1) (variable? v2) (eq? v1 v2)))
+
 (define (deriv exp var)
   (cond ((number? exp) 0)
         ((variable? exp) (if (same-variable? exp var) 1 0))
@@ -36,8 +42,35 @@
   (put 'make-sum '+ make-sum)
   (put 'deriv '+
     (lambda (exp var)
-      (make-sum (deriv (addend exp) var)
-        (deriv (augend exp) var))
+      (make-sum
+        (deriv (addend exp) var)
+        (deriv (augend exp) var)
+      )
+    )
+  )
+  'done
+)
+
+(define (install-muti-package)
+  (define (addend exp) (car exp))
+  (define (augend exp) (cadr exp))
+  (define (make-sum x y)
+    (cond ((and (number? x) (number? y)) (+ x y))
+          ((=number? x 0) y)
+          ((=number? y 0) x)
+          (else (attach-tag '+ (list x y)))
+    )
+  )
+
+  (put 'addend '* addend)
+  (put 'augend '* augend)
+  (put 'make-muti '* make-sum)
+  (put 'deriv '*
+    (lambda (exp var)
+      (make-muti
+        (deriv (addend exp) var)
+        (deriv (augend exp) var)
+      )
     )
   )
   'done
@@ -51,4 +84,6 @@
 
 ;(deriv '(+ (* 2 x) (+ x 1) 1) 'x)
 (install-sum-package)
-(deriv (make-sum 1 'x) 'x)
+;(make-sum 1 2)
+;(deriv (make-sum 1 'x) 'x)
+(deriv '(+ (* 2 x) (+ x 1) 1) 'x)
