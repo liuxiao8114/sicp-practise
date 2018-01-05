@@ -58,7 +58,8 @@
   (put 'magnitude '(rect) magnitude)
   (put 'angle '(rect) angle)
 ;  (put 'make-from-real-imag '(rect) make-from-real-imag)
-;^-- wrong! 这里的标志项'rect与上面的'(rect)不同之处在于：带括号是为了适应多参数版本(),如运算中出现的多个对象进行一次性提取
+;^-- wrong! 这里的标志项'rect与上面的'(rect)不同之处在于：带括号是为了适应多参数版本(如运算中出现的
+;多个对象进行一次性提取)
   (put 'make-from-real-imag 'rect (lambda (x y) (tag (make-from-real-imag x y))))
 ;^-- why not used same make-complex but make-from-real-imag
   'done
@@ -76,8 +77,9 @@
   ((get 'make-from-mag-ang 'pola) r a))
 ;(map contents (list (list 'rect 1 2)))
 ;(apply + '((1 2)))
+
 ;test case
-;(install-rect-package)
+(install-rect-package)
 ;(imag-part (list 'rect 1 2))
 ;(angle (list 'rect 1 2))
 ;(real-part (make-from-real-imag 1 2))
