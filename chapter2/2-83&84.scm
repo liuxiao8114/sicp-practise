@@ -1,17 +1,22 @@
-(load "util.scm")
+(load "2-5-1.scm")
 
-(define (scheme-number->scheme-number n) n)
-(define (complex->complex z) z)
+(put 'supertype 'scheme-number raise-scheme-number)
+(put 'supertype 'rational raise-rational)
 
-(put-coercion 'scheme-number 'scheme-number
-              scheme-number->scheme-number)
-(put-coercion 'complex 'complex complex->complex)
+(define (raise-scheme-number x)
+  (make-rational x 1))
 
-;a) 死循环。由于没有定义complex的exp的过程,以下过程将死循环:
-;(apply-generic op (t1-t2 a1) a2)) <-其中(t1-t2 a1) <=> a1
-;(apply-generic op a1 a2)
-;(get op type-tags) no defination
-;(apply-generic op (t1-t2 a1) a2))
+(define (raise-rational x)
+  (make-complex-from-real-imag x 0))
+
+(define (raise x)
+  (let ((proc (get 'supertype (type-tag x))))
+    (if proc
+      (proc (contents x))
+      (error "no supertype for: " x)
+    )
+  )
+)
 
 (define (apply-generic op . args)
   (let ((type-tags (map type-tag args)))

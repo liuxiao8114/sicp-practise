@@ -155,6 +155,8 @@
   )
 )
 
-(define operation-table (make-table)) ;<-- warn: this is diff from (define operation-table make-table)
+(define operation-table (make-table)) ;<-- attention: this is diff from (define operation-table make-table)
 (define get (operation-table 'lookup-proc))
 (define put (operation-table 'insert-proc!))
+(define get-coercion (operation-table 'lookup-proc))
+(define put-coercion (operation-table 'insert-proc!))
