@@ -6,7 +6,7 @@
 )
 
 (define (make-table f)
-  (let ((local-table '*table*))
+  (let ((local-table (list '*table*)))
     (define (lookup key1 key2)
       (let ((subtable (assoc key1 (cdr local-table) f)))
         (if subtable
@@ -22,7 +22,17 @@
     )
 
     (define (insert key1 key2 value)
-      ()
+      (let ((subtable (assoc key1 (cdr local-table) f)))
+        (if subtable
+          (let ((record (assoc key2 (cdr subtable) f)))
+            (if record
+              (set-cdr! record value)
+              (set-cdr! subtable (cons (cons key2 value) (cdr subtable)))
+            )
+          )
+          (set-cdr! local-table (cons (list key1 (cons key2 value)) local-table))
+        )
+      )
     )
 
     (define (dispatch m)
