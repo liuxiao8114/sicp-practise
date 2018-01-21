@@ -11,4 +11,17 @@
   (inverter (and-gate (inverter a1 output) (inverver a2 output) output) output)
 )
 
+; 2018/1/21 recoding
+(define (or-gate-re a1 a2 output)
+  (let ((invert-a1-output (make-wire))
+        (invert-a2-output (make-wire))
+        (and-output (make-wire)))
+        (inverter a1 invert-a1-output)
+        (inverter a2 invert-a2-output)
+        (and-gate invert-a1-output invert-a2-output and-output)
+        (inverter and-output output)
+        'ok
+  )
+)
+
 ;a + b = ^(^a * ^b)

@@ -3,15 +3,17 @@
 (define (call-each p)
   (if (null? p)
     'done
-    (begin ((car p)) (call-each (cdr p))) ;(car p) -> ((car p)) 执行(car p)
+    (begin ((car p)) (call-each (cdr p))) ;(car p) -> ((car p)) 无参数调用(car p)
   )
 )
 
 (define (make-wire)
-  (let ((signal-value 0) (action-proc '()))
+  (let ((signal-value 0)
+        (action-proc '()))
     (define (set-signal! new-value)
       (if (not (= signal-value new-value))
-        (begin (set! signal-value new-value)
+        (begin
+          (set! signal-value new-value)
           (call-each action-proc))
         'done
       )
@@ -31,8 +33,7 @@
   )
 )
 
-(define (get-signal wire)
-  (wire 'get-signal))
+(define (get-signal wire) (wire 'get-signal))
 
 (define (set-signal wire new-value) ((wire 'set-signal!) new-value))
 

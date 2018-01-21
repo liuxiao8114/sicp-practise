@@ -24,8 +24,8 @@
 )
 
 (define (logical-and a1 a2)
-  (cond ((or (number0 a1) (number0 a2)) 0)
-        ((and (number1 a1) (number1 a2)) 1)
+  (cond ((or (number0? a1) (number0? a2)) 0)
+        ((and (number1? a1) (number1? a2)) 1)
         (else (error "Invalid signal -- " s))
   )
 )
@@ -40,6 +40,24 @@
   (add-action a2 and-input)
 )
 
+(define (logical-or a1 a2)
+  (cond ((and (number0? a1) (number0? a2)) 0)
+        ((or (number1? a1) (number1? a2)) 1)
+        (else (error "Invalid signal -- " s))
+  )
+)
+
+(define (or-gate a1 a2 output)
+  (define (or-input)
+    (let ((new-value (logical-or (get-signal a1) (get-signal a2))))
+      (after-delay or-delay (lambda () (set-signal output new-value)))
+    )
+  )
+  (add-action a1 or-input)
+  (add-action a2 or-input)
+)
+
+
 (define (half-adder a b s c)
   (let ((d (make-wire)) (e (make-wire)))
     (or-gate a b d)
@@ -49,4 +67,13 @@
   )
 )
 
-(define (full-adder) ())
+(define (full-adder a b c-in sum c-out)
+  (let ((s1 (make-wire))
+        (c1 (make-wire))
+        (c2 (make-wire)))
+        (half-adder b c-in s1 c1)
+        (half-adder a s1 sum c2)
+        (or-gate c1 c2 c-out)
+        'ok
+  )
+)
