@@ -100,10 +100,10 @@
 ;   而只是cons嵌套表示的一种简写方式.以下的append操作的复杂度为o(n)
 ; (define rear (list 1 2 3)) (append rear (list 4 5 6)) => (list 1 2 3 4 5 6)
 ; (define rear '((1 2) (3 4))) (append rear '(5 6)) => '((1 2) (3 4) 5 6)
-; 本质上, cons和list的操作有其适用的场合
+; 本质上, cons和list的操作有其适用的场合.
 ; 在接下来的make-deque-const-a的实现中,其实就是用(cons (cons cur prev) next),
 ; 代替了(list cur prev next)的结构
-; 
+;
 (define (make-deque-const)
   (let ((front-ptr '()) ;'(cur prev next)
         (rear-ptr '())) ;'(cur prev next)

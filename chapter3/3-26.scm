@@ -69,4 +69,51 @@
   )
 )
 
-(define )
+(define (assoc-re key tree-records compare-to)
+  (cond ((null? tree-records) false)
+        ((= (compare-to key (caar records))) (car records))
+        ((< (compare-to key (caar records))) (assoc-re key (cadr records) compare-to))  ;left-branch
+        (else (assoc-re key (caddr records) compare-to)) ;right-branch
+  )
+)
+
+(define (assoc-re-insert key tree-records compare-to value)
+  (cond ((null? tree-records) (make-tree key value '() '()))
+        ((= (compare-to key (caar records))) (set-cdr! (car records) value))
+        ((< (compare-to key (caar records))) (assoc-re-insert key (cadr records) compare-to value))  ;left-branch
+        (else (assoc-re-insert key (caddr records) compare-to value)) ;right-branch
+  )
+)
+
+(define (make-tree key value left right) 
+  (list (cons key value) left right)
+)
+
+(define (make-table-re)
+  (let ((local-table (list '*table)))      
+    (define (lookup key) 
+      (let ((record (assoc-re key tree-records compare-to)))
+        (if record
+          (cdr record)
+          false
+        )  
+      )
+    )
+      
+    (define (insert! key value) 
+      (let ((record (assoc-re key tree-records compare-to)))
+        (if record
+          (set-cdr! record value)
+          ()
+        )
+      )
+    )
+      
+    (define (dispatch m) 
+      (cond ((eq? m 'lookup) lookup)
+            ((eq? m 'insert!) insert!)
+      )
+    )
+    dispatch
+  )
+)

@@ -1,6 +1,6 @@
 (define (assoc key records f)
   (cond ((null? records) false)
-        ((f key (caar records) (car records)))
+        ((f key (caar records)) (car records))
         (else (assoc key (cdr records) f))
   )
 )
@@ -30,7 +30,7 @@
               (set-cdr! subtable (cons (cons key2 value) (cdr subtable)))
             )
           )
-          (set-cdr! local-table (cons (list key1 (cons key2 value)) local-table))
+          (set-cdr! local-table (cons (list key1 (cons key2 value)) (cdr local-table)))
         )
       )
     )
@@ -41,10 +41,11 @@
             (else error "No Method -- " m)
       )
     )
+    dispatch
   )
 )
 
-(define balance 1)
+(define balance 10)
 
 (define (same-key? a b)
   (if (and (number? a) (number? b))
@@ -55,4 +56,9 @@
 
 (define t (make-table same-key?))
 
-((t insert) )
+;test case
+((t 'insert) 'A 1 'a)
+((t 'insert) 'B 11 'b)
+((t 'insert) 'C 21 'c)
+((t 'insert) 'B 31 'b)
+((t 'lookup) 'B 35)

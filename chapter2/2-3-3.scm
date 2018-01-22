@@ -30,7 +30,7 @@
   (cond ((null? s) #f)
         ((< x (car s)) #f)
         ((= x (car s)) #t)
-        (else (element-of-set? x (cdr s)))
+        (else (element-of-set-2? x (cdr s)))
   )
 )
 
