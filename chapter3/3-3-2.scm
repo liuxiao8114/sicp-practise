@@ -21,11 +21,11 @@
 (define (insert-queue! q i)
   (let ((new-pair (cons i '())))
     (cond ((empty-queue? q) (begin (set-front-ptr! q new-pair) (set-rear-ptr! q new-pair) q))
-      (else
-        (set-cdr! (rear-ptr q) new-pair)
-        (set-rear-ptr! q new-pair)
-        q
-      )
+          (else
+            (set-cdr! (rear-ptr q) new-pair)
+            (set-rear-ptr! q new-pair)
+            q
+          )
     )
   )
 )

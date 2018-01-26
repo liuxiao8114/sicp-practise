@@ -61,6 +61,7 @@
 (define (half-adder a b s c)
   (let ((d (make-wire)) (e (make-wire)))
     (or-gate a b d)
+    (and-gate a b c)
     (inverter c e)
     (and-gate d e s)
     'ok
@@ -71,9 +72,9 @@
   (let ((s1 (make-wire))
         (c1 (make-wire))
         (c2 (make-wire)))
-        (half-adder b c-in s1 c1)
-        (half-adder a s1 sum c2)
-        (or-gate c1 c2 c-out)
-        'ok
+    (half-adder b c-in s1 c1)
+    (half-adder a s1 sum c2)
+    (or-gate c1 c2 c-out)
+    'ok
   )
 )

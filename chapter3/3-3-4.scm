@@ -6,7 +6,7 @@
 (define (propagate)
   (if (empty-agenda? the-agenda)
     'done
-    (let ((first-item (frist-agenda-item the-agenda)))
+    (let ((first-item (first-agenda-item the-agenda)))
       (first-item)
       (remove-first-agenda-item! the-agenda)
       (propagate)
@@ -20,30 +20,34 @@
     (lambda ()
       (newline)
       (display name)
-      (display "  ")
+      (display ": ")
+      (display "Time = ")
       (display (current-time the-agenda))
-      (display " New-Value = ")
+      (display ", New-Value = ")
       (display (get-signal wire))
     )
   )
 )
 
-;test case
-
-(define inverter-delay 2)
+;test case for half-adder
+(define inverter-delay 4)
 (define and-delay 3)
-(define or-delay 5)
+(define or-delay 6)
 
 (define input-1 (make-wire))
 (define input-2 (make-wire))
 (define sum (make-wire))
 (define carry (make-wire))
 
-;(probe 'sum sum)
-;(probe 'carry carry)
+(probe 'sum sum)
+(probe 'carry carry)
 
-;(half-adder input-1 input-2 sum carry)
+(half-adder input-1 input-2 sum carry)
 
-;(set-signal input-1 1)
+(propagate) ;init, sum = 0, carry = 0
 
-;(propagate)
+(set-signal input-1 1)
+(propagate) ;sum = 1, carry = 0
+
+(set-signal input-2 1)
+(propagate) ;sum = 0, carry = 1

@@ -2,7 +2,7 @@
 
 (define (call-each p)
   (if (null? p)
-    'done
+    'done!
     (begin ((car p)) (call-each (cdr p))) ;(car p) -> ((car p)) 无参数调用(car p)
   )
 )
@@ -15,7 +15,7 @@
         (begin
           (set! signal-value new-value)
           (call-each action-proc))
-        'done
+          'done!
       )
     )
     (define (accept-action-proc! proc)
