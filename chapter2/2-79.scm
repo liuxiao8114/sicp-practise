@@ -5,4 +5,4 @@
 
 (install-scheme-number-package)
 (install-rational-package)
-(equ? (make-rational 3 5) (make-rational 6 8))
+(equ? (make-rational 3 5) (make-rational 6 10))

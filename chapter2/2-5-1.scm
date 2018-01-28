@@ -1,4 +1,3 @@
-(load "util.scm")
 (load "2-4-3.scm") ;引入install-rect-package 和 install-imag-package
 
 (define (add x y) (apply-generic 'add x y))

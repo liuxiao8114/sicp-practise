@@ -37,10 +37,23 @@
     )
 
     (define (forget-value retractor)
-      ())
+      (if (eq? retractor informant)
+        (begin
+          (set! informant false)
+          (for-each-except informant inform-no-value constraints)
+        )
+        'ignored
+      )
+    )
 
     (define (connect new-constraint)
-      ())
+      (if (not (memq new-constraint constraints))
+        (set! constraints (cons new-constraint constraints))
+      )
+      (if (has-value? me)
+        (inform-value new-constraint)
+      )
+    )
 
     (define (me request)
       (cond (((eq? request 'has-value?)
@@ -67,6 +80,9 @@
 
 (define (connect connector new-constraint)
   ((connector 'connect) new-constraint))
+
+(define (inform-value constraint) (constraint 'have))
+(define (inform-no-value constraint) (constraint 'forget))
 
 (define (adder a1 a2 sum)
   (define (process-new-value)
@@ -100,9 +116,6 @@
   (connect sum me)
   me
 )
-
-(define (inform-value constraint) (constraint 'have))
-(define (inform-no-value constraint) (constraint 'forget))
 
 (define (multiplier m1 m2 product)
   (define (process-new-value)
@@ -143,7 +156,7 @@
     (error "unknown request -- " request)
   )
   (connect connector me)
-  (set-value! connector value me)
+  (set-value! connector value)
   me
 )
 

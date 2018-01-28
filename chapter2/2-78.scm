@@ -17,7 +17,7 @@
 
 (define (contents datum)
   (cond ((number? datum) datum)
-        ((pair? datum) (car datum))
+        ((pair? datum) (cdr datum))
         (else (error "Bad contented datum"))
   )
 )

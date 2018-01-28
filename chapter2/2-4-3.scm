@@ -1,5 +1,3 @@
-(load "util.scm")
-
 ;1.定义rect计算包，内部定义各个选择函数，用put公开计算接口(格式：操作名 类型名 过程)
 ;2.外部定义父类接口，并用get提供具体实现方式
 ;3.调用时，指定具体调用标记和参数
@@ -10,14 +8,14 @@
 (define (type-tag datum)
   (if (pair? datum)
     (car datum)
-    (error "Bad tagged datum")
+    (error "Bad tagged datum: " datum)
   )
 )
 
 (define (contents datum)
   (if (pair? datum)
     (cdr datum)
-    (error "Bad contented datum")
+    (error "Bad contented datum: " datum)
   )
 )
 
@@ -36,7 +34,7 @@
 ;2018/1/3 实际上，下面的这些测试全部报错
 ;问题在于apply-generic函数用于解包type为'(rect) 这种类型, 所以args本身必须为pair类型(如:(list 'rect 1 2))
 ;在正确取得proc( + )之后,调用apply的第二个参数同样也是pair类型, 相当于(+ '(;pair类型)), 所以必然报错
-(put 'real-part '(rect) +)
+;(put 'real-part '(rect) +)
 ;(apply (get 'real-part '(rect)) '(1 2))
 ;(apply-generic 'real-part (list 'rect 1 2))
 ;(apply (get 'real-part '(rect)) '(1 2))
