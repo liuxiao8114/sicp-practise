@@ -1,3 +1,5 @@
+(load "2-18.scm")
+
 (define (deep-reverse l)
   (define (iter l result)
     (cond ((null? l) result)
@@ -11,13 +13,23 @@
 (define (deep-reverse-2 l)
   (define (iter l result)
     (cond ((null? l) result)
-          ((not (pair? l)) ())
+          ((not (pair? (car l))) (iter (cdr l) (cons (car l) result)))
           (else (iter (cdr l) (cons (iter (car l) '()) result)))
     )
   )
   (iter l '())
 )
 
-(define x (list (list 1 2 (list 3 4)) (list (list 5) (list 6 7 8))))
+(define (deep-reverse-3 l)
+  (define (iter l ret)
+    (cond ((null? l) ret)
+          ((pair? (car l)) (iter (cdr l) (cons (deep-reverse-3 (car l)) ret)))
+          (else (iter (cdr l) (cons (car l) ret)))
+    )
+  )
+  (iter l '())
+)
 
-(deep-reverse-2 x)
+(define x '((1 2 (3 4)) ((5) (6 7 8))))
+
+(deep-reverse-3 x)

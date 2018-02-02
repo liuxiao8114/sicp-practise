@@ -1,13 +1,27 @@
 (define (probe name connector)
-  (add-action
-    connector
-    (lambda ()
-      (newline)
-      (display name)
-      (display " = ")
-      (display (current-time the-agenda))
+  (define (print-probe value)
+    (newline)
+    (display "Probe: ")
+    (display name)
+    (display " = ")
+    (display value)
+  )
+
+  (define (process-new-value)
+    (print-probe (get-value connector)))
+
+  (define (process-forget-value)
+    (print-probe "?"))
+
+  (define (me request)
+    (cond ((eq? request 'have) (process-new-value))
+          ((eq? request 'forget) (process-forget-value))
+          (else (error "Unknown request -- PROBE " request))
     )
   )
+
+  (connect connector me)
+  me
 )
 
 (define (for-each-except exception procedure list)
@@ -53,6 +67,7 @@
       (if (has-value? me)
         (inform-value new-constraint)
       )
+      'done
     )
 
     (define (me request)
@@ -75,8 +90,8 @@
 (define (get-value connector)
   (connector 'value))
 
-(define (set-value! value connector)
-  ((connector 'set-value!) value 'user))
+(define (set-value! value connector informant)
+  ((connector 'set-value!) value informant))
 
 (define (connect connector new-constraint)
   ((connector 'connect) new-constraint))

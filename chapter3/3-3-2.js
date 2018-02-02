@@ -16,7 +16,15 @@ Queue.prototype.enqueue = function(n) {
   if(this.first === null) {
     this.first = n
     this.rear = n
+  } else {
+    let temp = this.rear
+    temp.next = n
+    this.rear = n
   }
+}
+
+Queue.prototype.search = function() {
+  
 }
 
 Queue.prototype.dequeue = function() {

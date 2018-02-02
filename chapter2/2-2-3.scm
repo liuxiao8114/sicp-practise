@@ -11,13 +11,34 @@
 ;作为序列考虑-->麻烦好多
 (define (sum-odd-squares-2 t)
   (cond ((null? t) 0)
-        ((pair? (car t)) (+ (sum-odd-squares (car t)) (sum-odd-squares (cdr t))))
-        (else (if (odd? (car t)) (+ (square (car t)) (sum-odd-squares (cdr t))) (sum-odd-squares (cdr t))))
+        ((pair? (car t)) (+ (sum-odd-squares-2 (car t)) (sum-odd-squares-2 (cdr t))))
+        (else
+          (if (odd? (car t))
+            (+ (square (car t)) (sum-odd-squares-2 (cdr t)))
+            (sum-odd-squares-2 (cdr t))
+          )
+        )
   )
+)
+
+(define (even-fibs n)
+  (define (iter k ret)
+    (if (= k n)
+      ret
+      (let ((f (fib k)))
+        (if (even? f)
+          (iter (+ k 1) (cons f ret))
+          (iter (+ k 1) ret)
+        )
+      )
+    )
+  )
+  (iter 0 '())
 )
 
 ;(sum-odd-squares-2 tree-test-2)
 
+;; Sequence Operations
 ;枚举 -> 过滤 -> 映射 -> 累加
 
 (define (accumulate op initial seq)
@@ -43,6 +64,29 @@
   )
   (iter '() n)
 )
+
+(define (enum-interval low high)
+  (if (> low high)
+    '()
+    (cons low (enum-interval (+ low 1) high))
+  )
+)
+
+(define (enum-tree tree) ;this is the same as exec.2-28(fringe)
+  (cond ((null? tree) '())
+        ((not (pair? tree)) (list tree))
+        (else append (enum-tree (car tree)) (enum-tree (cdr tree)))
+  )
+)
+;(enum-tree '(1 (2 (3 4)) 5))
+;(append (enum-tree 1) (enum-tree '((2 (3 4)) 5)))
+;(append '(1) (append (enum-tree '(2 (3 4)) (enum-tree '(5)))))
+;(append '(1) (append (enum-tree '(2 (3 4)) (append (enum-tree 5) (enum-tree '())))))
+;(append '(1) (append (enum-tree '(2 (3 4)) '(5))))
+;(append '(1) (append (append (enum-tree 2) (enum-tree '((3 4)))) '(5)))
+;(append '(1) (append (append '(2) (append (enum-tree (3 4)) '())) '(5)))
+;(append '(1) (append (append '(2) (append '(3 4) '(5)))))
+;(append '(1) (append (append '(2) '(3 4 5))))
 
 (define (flatmap proc seq)
   (accumulate append '() (map proc seq)))

@@ -1,3 +1,4 @@
+;2.2.2  Hierarchical Structures
 (define (map proc l)
   (if (null? l)
     '()
@@ -5,6 +6,15 @@
   )
 )
 
+(define (count-leaves x)
+  (cond ((null? x) 0)
+        ((not (pair? x)) 1)
+        (else (+ (count-leaves (car x))
+                 (count-leaves (cdr x))))
+  )
+)
+
+;; Mapping over trees
 (define (scale-tree t factor)
   (map
     (lambda (x)

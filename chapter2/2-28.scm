@@ -7,13 +7,13 @@
   )
 )
 
-(define x (list (list 1 2) (list 3 4)))
+(define x '((1 2) (3 4) 5 6))
 
-(define (fringe-another x)
+(define (fringe-a x)
   (cond ((null? x) '())
         ((not (pair? x)) (list x))
         (else (append (fringe-a (car x)) (fringe-a (cdr x))))
   )
 )
 
-(fringe x)
+(fringe-a (list x x))
