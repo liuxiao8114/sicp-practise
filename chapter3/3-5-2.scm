@@ -1,34 +1,103 @@
-(define (random-in-range low high)
-  (let ((range (- high low)))
-    (+ low (random (exact->inexact range)))
+(define (stream-ref s n)
+  (if (= n 0)
+    (stream-car s)
+    (stream-ref (stream-cdr s) (- n 1))
   )
 )
 
-(define (monte-cario trials experiment)
-  (define (iter trials-remain trials-passed)
-    (cond ((= 0 trials-remain) (/ trials-passed trials))
-          ((experiment) (iter (- trials-remain 1) (+ trials-passed 1)))
-          (else (iter (- trials-remain 1) trials-passed))
+(define (integers-starting-from n)
+  (cons-stream n (integers-starting-from (+ n 1))))
+
+(define integers (integers-starting-from 1))
+
+(define (divisible? x y)(= (remainder x y) 0))
+(define no-sevens
+  (stream-filter (lambda (x) (not (divisible? x 7))) integers))
+
+(define (fibgen a b)
+  (cons-stream a (fibgen b (+ a b))))
+
+(define fib (fibgen 0 1))
+
+;self impletation, no delay, out of memory
+(define (sieve stream)
+  (if (stream-null? stream)
+    the-empty-stream
+    (sieve
+      (stream-filter
+        (lambda (x) (not (divisible? x (stream-car stream))))
+        (stream-cdr stream)
+      )
     )
   )
-  (iter trials 0)
 )
 
-(define (p x y)
-  (not (< 1.0 (+ (square x) (square y))))
+(define (sieve stream)
+  (cons-stream
+    (stream-car stream)
+    (sieve
+      (stream-filter
+        (lambda (x) (not (divisible? x (stream-car stream))))
+        (stream-cdr stream)
+      )
+    )
+  )
 )
 
-(define (calculate-pi p x1 x2 y1 y2 count)
-  (define (estimate-integral)
-    (p (random-in-range x1 x2) (random-in-range y1 y2)))
+(define primes (sieve (integers-starting-from 2)))
+;(stream-ref primes 50) ;233
 
-  (* (exact->inexact (monte-cario count estimate-integral)) 4)
+;test case
+(stream-ref no-sevens 100) ;117
+(stream-ref fib 10) ;55
+(stream-ref primes 50)
+
+;;Defining streams implicitly
+(define ones (cons-stream 1 ones))
+;(ones)
+;(cons-stream 1 (cons-stream 1 ones))
+(define (add-streams s1 s2)
+  (stream-map + s1 s2))
+
+(define integers (cons-stream 1 (add-streams ones integers)))
+
+;(add-streams ones integers)
+;<=> (cons-stream 2 (stream-map + ones (add-streams ones integers)))
+
+;(integers)
+;(cons-stream 1 (stream-map + ones integers))
+;(cons-stream
+;  1
+;  (cons-stream
+;    2
+;    (apply
+;      stream-map
+;      (list + ones (add-streams ones integers)))))
+;(cons-stream 1 (cons-stream 2 (stream-map + ones (add-streams ones integers)))
+;(cons-stream 1 (cons-stream 2 (cons-stream 3 (stream-map + ones (stream-map + ones (add-streams ones integers))))))
+;
+;
+(define fibs
+  (cons-stream
+    0
+    (cons-stream
+      1
+      (add-streams (streams-cdr fibs) fibs))))
+
+(define (scale-stream stream factor)
+  (stream-map (lambda (x) (* x factor)) stream)
 )
 
-(calculate-pi p -1.0 1.0 -1.0 1.0 10000)
+(define double (cons-stream 1 (scale-stream double 2)))
 
-;(define (test exp) (cond ((eq? #t exp) 'yes!) (else 'no!)))
-;(test (not (> 1 0)))
+(define primes (cons-stream 2 (stream-filter prime? (integers-starting-from 3))))
 
-;(> 3 2)
-;(p (random-in-range -1.0 1.0) (random-in-range -1.0 1.0))
+(define (prime? n)
+  (define (iter ps)
+    (cond ((> (square (stream-car ps)) n) true)
+          ((divisible? n (stream-car ps)) false)
+          (else (iter (stream-cdr ps)))
+    )
+  )
+  (iter primes)
+)
