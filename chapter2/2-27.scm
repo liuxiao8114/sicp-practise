@@ -30,6 +30,18 @@
   (iter l '())
 )
 
+;tree view ??? you cann't find a convient way to locate and update subtree
+(define (deep-reverse-4 l)
+  (define (iter l temp result)
+    (cond ((null? l) '())
+          ((not (null? temp)) (append result temp))
+          ((not (pair? l)) (cons l temp))
+          (else (iter (cdr l) temp (iter (car l) temp result)))
+    )
+  )
+  (iter l '() '())
+)
+
 (define x '((1 2 (3 4)) ((5) (6 7 8))))
 
 (deep-reverse-3 x)

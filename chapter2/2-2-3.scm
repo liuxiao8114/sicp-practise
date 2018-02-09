@@ -91,6 +91,32 @@
 (define (flatmap proc seq)
   (accumulate append '() (map proc seq)))
 
+;通用过程:
+(define (sum-odd-squares-comm tree)
+  (accumulate + 0 (map square (filter odd? (enum-tree tree)))))
+
+(define (enum-fib n)
+  (define (iter k)
+    (if (< k n)
+      (cons (fib k) (iter (+ k 1)))
+      '()
+    )
+  )
+)
+
+(define (enum-fib-re n)
+  (map fib (enum-interval 0 n)))
+
+(define (even-fibs-comm n)
+  (accumulate cons '() (filter even? (enum-fib n))))
+
+(define (list-fib-squares n)
+  (accumulate
+    cons '() (map square (map fib (enum-interval 0 n)))))
+
+(define (product-of-squares-of-odd-elements sequence)
+  (accumulate * 1 (map square (filter odd? sequence))))
+
 (define (make-pair-sum pair)
   (list (car pair) (cadr pair) (+ (car pair) (cadr pair))))
 

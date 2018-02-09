@@ -6,3 +6,13 @@
 )
 
 (last-pair (list 1 2 3 4))
+
+(define (last-pair-another l)
+  (define (iter l result)
+    (if (null? l)
+      (car result)
+    )
+    (iter (cdr l) (cons (car l) result))
+  )
+  (iter l '())
+)
