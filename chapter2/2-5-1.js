@@ -8,21 +8,20 @@ function Express() {}
 // this may have the same function with apply-logic in 2-5-2.scm
 Express.caculator = operator => (x, y) => {
   let exp = null
-  const op = Express.TYPE_TABLE(operator)
 
-  if(x.constructor === y.constructor) {
+  if(x.constructor && x.constructor === y.constructor) {
     exp = x.constructor
-    return (op.exp)(x, y)
+    return exp[operator](x, y)
   }
 
   exp = [x.constructor, y.constructor]
   exp.map(n => op[n])
 }
 
-Express.prototype.add = Express.caculator('add')
-Express.prototype.sub = Express.caculator('sub')
-Express.prototype.mul = Express.caculator('mul')
-Express.prototype.div = Express.caculator('div')
+Express.add = Express.caculator('add')
+Express.sub = Express.caculator('sub')
+Express.mul = Express.caculator('mul')
+Express.div = Express.caculator('div')
 
 Express.TYPE_TABLE = key => {
   return {
@@ -66,12 +65,14 @@ function SchemeNumber(x) {
   this.num = x
 }
 
-function SchemeExpress() {}
+SchemeNumber.prototype.convertToParent = () => {
+  return new Rational(this.num, 1)
+}
 
-SchemeExpress.add = (x, y) => new SchemeNumber(x.num + y.num)
-SchemeExpress.sub = (x, y) => new SchemeNumber(x.num - y.num)
-SchemeExpress.mul = (x, y) => new SchemeNumber(x.num * y.num)
-SchemeExpress.div = (x, y) => new SchemeNumber(x.num / y.num)
+SchemeNumber.add = (x, y) => new SchemeNumber(x.num + y.num)
+SchemeNumber.sub = (x, y) => new SchemeNumber(x.num - y.num)
+SchemeNumber.mul = (x, y) => new SchemeNumber(x.num * y.num)
+SchemeNumber.div = (x, y) => new SchemeNumber(x.num / y.num)
 
 function Rational(num, denom) {
   this.type = RATIONAL
@@ -79,15 +80,17 @@ function Rational(num, denom) {
   this.denom = denom
 }
 
-function RationalExpress() {}
+Rational.add = (x, y) => new Rational(x.num * y.denom + y.num * x.denom , x.denom * y.denom)
+Rational.sub = (x, y) => new Rational(x.num * y.denom - y.num * x.denom , x.denom * y.denom)
+Rational.mul = (x, y) => new Rational(x.num * y.num, x.denom * y.denom)
+Rational.div = (x, y) => new Rational(x.num * y.denom, x.denom * y.num)
 
-RationalExpress.add = (x, y) => new Rational(x.num * y.denom + y.num * x.denom , x.denom * y.denom)
-RationalExpress.sub = (x, y) => new Rational(x.num * y.denom - y.num * x.denom , x.denom * y.denom)
-RationalExpress.mul = (x, y) => new Rational(x.num * y.num, x.denom * y.denom)
-RationalExpress.div = (x, y) => new Rational(x.num * y.denom, x.denom * y.num)
+Rational.prototype.convertToParent = () => {
+  return new Complex(this.num, 1)
+}
 
 function Complex(type, x, y) {
-  const c = new type(x, y)
+  const c = new [type](x, y)
 
   this.real = c.real
   this.imag = c.imag
@@ -118,17 +121,15 @@ function ComplexPolar(x, y) {
   this.angle = y
 }
 
-function ComplexExpress() {}
+Complex.add = (x, y) => new Complex(ComplexRect, x.real + y.real, x.imag + y.imag)
+Complex.sub = (x, y) => new Complex(ComplexRect, x.real - y.real, x.imag - y.imag)
+Complex.mul = (x, y) => new Complex(ComplexPolar, x.magnitude + y.magnitude, x.angle + y.angle)
+Complex.div = (x, y) => new Complex(ComplexPolar, x.magnitude - y.magnitude, x.angle - y.angle)
 
-ComplexExpress.add = (x, y) => new Complex(ComplexRect, x.real + y.real, x.imag + y.imag)
-ComplexExpress.sub = (x, y) => new Complex(ComplexRect, x.real - y.real, x.imag - y.imag)
-ComplexExpress.mul = (x, y) => new Complex(ComplexPolar, x.magnitude + y.magnitude, x.angle + y.angle)
-ComplexExpress.div = (x, y) => new Complex(ComplexPolar, x.magnitude - y.magnitude, x.angle - y.angle)
-
-const e = new Express()
-e.add(new SchemeNumber(1), new SchemeNumber(2))
-e.mul(new SchemeNumber(3), new SchemeNumber(4))
-e.add(new Rational(1, 2), new Rational(1, 3))
-e.mul(new Rational(3, 4), new Rational(5, 6))
-e.add(new Complex(ComplexRect, 1, 2), new Complex(ComplexRect, 1, 3))
-e.mul(new Complex(ComplexRect, 3, 4), new Complex(ComplexRect, 6, 8))
+//test case:
+Express.add(new SchemeNumber(1), new SchemeNumber(2))
+Express.mul(new SchemeNumber(3), new SchemeNumber(4))
+Express.add(new Rational(1, 2), new Rational(1, 3))
+Express.mul(new Rational(3, 4), new Rational(5, 6))
+Express.add(new Complex(ComplexRect, 1, 2), new Complex(ComplexRect, 1, 3))
+Express.mul(new Complex(ComplexRect, 3, 4), new Complex(ComplexRect, 6, 8))

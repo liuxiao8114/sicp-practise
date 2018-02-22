@@ -4,6 +4,8 @@
 (define (sub x y) (apply-generic 'sub x y))
 (define (mul x y) (apply-generic 'mul x y))
 (define (div x y) (apply-generic 'div x y))
+(define (equ? x y) (apply-generic 'equ? x y)) ;practise2.79
+(define (=zero? x) (apply-generic '=zero? x)) ;practise2.80
 
 (define (install-scheme-number-package)
   (define (tag x) (attach-tag 'scheme-number x))
@@ -11,8 +13,8 @@
   (put 'sub '(scheme-number scheme-number) (lambda (x y) (tag (- x y))))
   (put 'mul '(scheme-number scheme-number) (lambda (x y) (tag (* x y))))
   (put 'div '(scheme-number scheme-number) (lambda (x y) (tag (/ x y))))
-  ;for practise2.79
-  (put 'equ? '(scheme-number scheme-number) (lambda (x y) (tag (= x y))))
+  (put 'equ? '(scheme-number scheme-number) (lambda (x y) (= x y)))  ;practise2.79
+  (put '=zero? '(scheme-number) (lambda (x) (= x 0)))  ;practise2.80
   (put 'make 'scheme-number (lambda (x) (tag x)))
   'done
 )
@@ -32,6 +34,7 @@
   (define (div-rat x y) (make-rat (* (numer x) (denom y)) (* (denom x) (numer y))))
 
   (define (equ?-rat x y) (and (= (numer x) (numer y)) (= (denom x) (denom y))))
+  (define (=zero?-rat x) (= (numer x) 0))
 
   (define (tag x) (attach-tag 'rational x))
 
@@ -40,8 +43,9 @@
   (put 'mul '(rational rational) (lambda (x y) (tag (mul-rat x y))))
   (put 'div '(rational rational) (lambda (x y) (tag (div-rat x y))))
 
-  ;for practise2.79
-  (put 'equ? '(rational rational) (lambda (x y) (tag (equ?-rat x y))))
+  ;for practise2.79 & 2.80
+  (put 'equ? '(rational rational) (lambda (x y) (equ?-rat x y)))
+  (put '=zero? '(rational) (lambda (x) (=zero?-rat x)))
 
   (put 'make 'rational (lambda (x y) (tag (make-rat x y))))
   'done
@@ -66,10 +70,26 @@
   (define (div-complex z1 z2)
     (make-from-mag-ang (/ (magnitude z1) (magnitude z2)) (- (angle z1) (angle z2))))
 
+  (define (equ?-complex z1 z2)
+    (and
+      (= (real-part z1) (real-part z2))
+      (= (imag-part z1) (imag-part z2)))
+  )
+
+  (define (=zero?-complex z)
+    (and
+      (= (real-part z) 0)
+      (= (imag-part z) 0))
+  )
+
   (put 'add '(complex complex) (lambda (z1 z2) (tag (add-comlex z1 z2))))
   (put 'sub '(complex complex) (lambda (z1 z2) (tag (sub-comlex z1 z2))))
   (put 'mul '(complex complex) (lambda (z1 z2) (tag (mul-comlex z1 z2))))
   (put 'div '(complex complex) (lambda (z1 z2) (tag (div-comlex z1 z2))))
+
+  ;practise2.79 & 2.80
+  (put 'equ? '(complex complex) (lambda (z1 z2) (equ?-complex z1 z2)))
+  (put '=zero? '(complex) (lambda (z) (=zero?-complex z)))
   (put 'make-from-real-imag 'complex (lambda (real imag) (tag (make-from-real-imag real imag))))
   (put 'make-from-mag-ang 'complex (lambda (mag ang) (tag (make-from-mag-ang mag ang))))
 

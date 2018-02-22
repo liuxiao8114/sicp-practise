@@ -6,7 +6,7 @@
 (define (drop-complex x)
   (if (equ? (imag x) 0)
     (make-rational (real x))
-    (error "cannot drop: " x)
+    (error "cannot drop (imag unequal 0): " x)
   )
 )
 

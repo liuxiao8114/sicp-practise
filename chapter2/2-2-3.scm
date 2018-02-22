@@ -136,4 +136,31 @@
   )
 )
 
+;;Nested Mappings
+(accumulate
+  append
+  '()
+  (map
+    (lambda (x) (map (lambda (y) (list x y)) (enum-interval 1 (- x 1))))
+    (enum-interval 1 5) ; n = 5
+  )
+)
+
+(define (flatmap op seqs)
+  (accumulate append '() (map op seqs)))
+
+(define (remove item sequence)
+  (filter (lambda (x) (not (= x item)))
+          sequence))
+
+(define (permutations s)
+  (if (null? s)
+    (list '())
+    (flatmap
+      (lambda (x) (map (lambda (y) (cons x y)) (permutations (remove x s))))
+      s
+    )
+  )
+)
+
 ;(prime-sum-pairs 10)
