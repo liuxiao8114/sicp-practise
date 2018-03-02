@@ -38,10 +38,10 @@
   (cond ((null? tree) 0)
         ((leaf? tree) (weight-leaf tree))
         (else (cadddr tree))
-
   )
 )
 
+;;The decoding procedure
 (define (decode bits tree)
   (define (decode-1 bits current-branch)
     (if (null? bits)
@@ -65,6 +65,7 @@
   )
 )
 
+;;Sets of weighted elements
 (define (adjoin-set-huff x set)
   (cond ((null? set) (list x))
         ((< (weight x) (weight (car set))) (cons x set))
@@ -84,5 +85,6 @@
   )
 )
 
-(make-leaf-set '((c 1) (d 1) ((e f g) 10) (b 2) (a 4))) ; error!
+;test case:
+;(make-leaf-set '((c 1) (d 1) ((e f g) 10) (b 2) (a 4))) ; error!
 (make-leaf-set '((c 1) (d 1) (e 10) (b 2) (a 4))) ; OK!

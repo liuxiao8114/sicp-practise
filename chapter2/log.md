@@ -38,29 +38,45 @@ magnitude
 angle
 
 2018/2/21
+2-76.scm 首先要说明的是, message passing的做法, 与currying(柯里化)非常相像
+```scheme
+(define (make-from-real-imag x y)
+  (define (dispatch op)
+    (cond ((eq? op 'real-part) x)
+          ((eq? op 'imag-part) y)
+          ((eq? op 'magnitude) (sqrt (+ (square x) (square y))))
+          ((eq? op 'angle) (atan y x))
+          (else
+           (error "Unknown op -- MAKE-FROM-REAL-IMAG" op))))
+  dispatch
+)
+```
+这种实现方式，避免了explicit dispatch的命名冲突问题。
+如果添加类型的处理更多,用 data-dispatch更合适(避免命名冲突),
+如果添加方法的处理更多,用 哪一个都无所谓(显式指派用的代码更少?)
+
 2-78.scm提供了一种默认调用的数据类型的方式，即在type-tag判断时如果没有提取到type时
-如何处理。这种处理方式类似于message passing:
+如何处理。这种处理方式类似于显式指派(explicit dispatch):
 (define (add a b)
   (cond ((and (number? a) (number? b)) (add-number a b))
         ((and (ration? a) (rantion? b)) (add-ration a b))
+  )
 )
-
-类比dispatch?
 
 2018/2/22
 2-73.scm 设问d:
 由((get 'deriv (operator exp)) (operands exp) var)
 变成((get (operator exp) 'deriv) (operands exp) var)
 
-的问题背后,不仅是在put动作上位置的调换,更进一步的apply-generic的取type的对象也需要变化。
+的问题背后,不仅是在put动作上位置的调换,其含义上似乎与接下来讨论的message passing有所联系,
+即
 
-(define (apply-generic op . args)
-  (let ((type-tags (map type-tag args)))
-    (let ((proc (get op type-tags)))
-      (if proc
-        (apply proc (map contents args))
-        (error "No methods--" op)
-      )
-    )
-  )
-)
+2018/2/26 2-3-4.practise 2.67~2.72
+huffman树的实现(Algorithms 有详细实现步骤):
+
+
+
+2018/2/27 ~ 3/31 2-93.scm(practise 2.93 ~ 2.97)
+止于2.96, 未完成reduce的实现。
+(gcd-terms的实现结果由于remove了common-factor目前结果仍为fraction)
+reduce的实现本身雷同于gcd并不困难。主要在于多项式的reduce机制仍需要单独研究。

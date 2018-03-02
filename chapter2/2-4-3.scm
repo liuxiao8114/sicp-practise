@@ -31,7 +31,7 @@
     (let ((proc (get op type-tags)))
       (if proc
         (apply proc (map contents args))
-        (error "No methods--" op)
+        (error "No methods--" (list op args))
       )
     )
   )
@@ -72,6 +72,24 @@
   'done
 )
 
+(define (install-pola-package)
+  (define (tag x) (attach-tag 'pola x))
+  (define (real-part z) (* (magnitude z) (cos (angle z))))
+  (define (imag-part z) (* (magnitude z) (sin (angle z))))
+  (define (magnitude z) (car z))
+  (define (angle z) (cdr z))
+
+  (define (make-from-mag-ang r a) (cons r a))
+
+  (put 'real-part '(pola) real-part)
+  (put 'imag-part '(pola) imag-part)
+  (put 'magnitude '(pola) magnitude)
+  (put 'angle '(pola) angle)
+  (put 'make-from-mag-ang 'pola (lambda (x y) (tag (make-from-mag-ang x y))))
+
+  'done
+)
+
 (define (real-part z) (apply-generic 'real-part z))
 (define (imag-part z) (apply-generic 'imag-part z))
 (define (magnitude z) (apply-generic 'magnitude z))
@@ -87,6 +105,7 @@
 
 ;test case
 (install-rect-package)
+(install-pola-package)
 ;(imag-part (list 'rect 1 2))
 ;(angle (list 'rect 1 2))
 ;(real-part (make-from-real-imag 1 2))

@@ -12,8 +12,18 @@
   (define (make-poly variable term-list)
     (cons variable term-list))
 
-  (define (variable p) (car p))
-  (define (term-list p) (cdr p))
+  (define (variable p)
+    (if (pair? p)
+      (car p)
+      (error "what the fuck! variable -- " p)
+    )
+  )
+  (define (term-list p)
+    (if (pair? p)
+      (cdr p)
+      (error "what the fuck! term-list -- " p)
+    )
+  )
 
   (define (negation p)
     (make-poly
@@ -49,20 +59,34 @@
   (define (div-poly p1 p2)
     (if (same-variable? (variable p1) (variable p2))
       (let ((result (div-terms (term-list p1) (term-list p2))))
-        (if (and (empty-termlist? (car result)) (empty-termlist? (cadr result)))
-          0
-          (make-poly (variable p1) result)
+        (cond ((and (empty-termlist? (car result)) (empty-termlist? (cadr result))) 0)
+              ((empty-termlist? (cadr result)) (tag (make-poly (variable p1) result)))
+              (else (cons (variable p1) result))
         )
       )
       (error "not same variable : " (list p1 p2))
     )
   )
 
+  ;practise2.93
+  (define (gcd-poly a b)
+    (if (same-variable? (variable a) (variable b))
+      (let ((gcd-result (gcd-terms (term-list a) (term-list b))))
+        (if (and (= 0 (caar gcd-result)) (= 1 (length gcd-result)))
+          (cadr (car gcd-result)) ;if结果为常系数时化简
+          (tag (make-poly (variable a) gcd-result))
+        )
+      )
+      (error "Polys not in same var -- GCD-POLY " (list a b))
+    )
+  )
+
   (put 'add '(polynomial polynomial) (lambda (p1 p2) (tag (add-poly p1 p2))))
   (put 'mul '(polynomial polynomial) (lambda (p1 p2) (tag (mul-poly p1 p2))))
   (put 'sub '(polynomial polynomial) (lambda (p1 p2) (tag (add-poly p1 (negation p2)))))
-  (put 'div '(polynomial polynomial) (lambda (p1 p2) (tag (div-poly p1 p2))))
+  (put 'div '(polynomial polynomial) (lambda (p1 p2) (div-poly p1 p2))) ;no need tag because remainder
   (put 'equ? '(polynomial polynomial) (lambda (p1 p2) (equ? p1 p2)))
+  (put 'gcd '(polynomial polynomial) (lambda (p1 p2) (gcd-poly p1 p2))) ;inside tag process
   (put '=zero? '(polynomial) (lambda (p) (=zero? p)))
   (put 'make 'polynomial (lambda (var terms) (tag (make-poly var terms))))
 )
@@ -142,20 +166,29 @@
   )
 )
 
+(define (remainder-terms a b)
+  (cadr (div-terms a b))
+)
+
+(define (gcd-terms a b)
+  (if (empty-termlist? b)
+      a
+      (gcd-terms b (remainder-terms a b))))
+
 (define (make-polynomial var terms)
  ((get 'make 'polynomial) var terms))
 
 ;test case:
-(install-scheme-number-package)
-(install-polynomial-package)
-(define p1 (make-polynomial 'x (list (make-term 2 4) (make-term 1 3) (make-term 0 10))))
-(define p2 (make-polynomial 'x (list (make-term 1 2) (make-term 0 20))))
+;(install-scheme-number-package)
+;(install-polynomial-package)
+;(define p1 (make-polynomial 'x (list (make-term 2 4) (make-term 1 3) (make-term 0 10))))
+;(define p2 (make-polynomial 'x (list (make-term 1 2) (make-term 0 20))))
 
 ;(add p1 p2) ;(polynomial x (2 4) (1 5) (0 30))
 ;(mul p1 p2) ;(polynomial x (3 8) (2 86) (1 80) (0 200))
 ;(sub p1 p2) ;(polynomial x (2 4) (1 1) (0 -10))
 
-(define p3 (make-polynomial 'x (list (make-term 5 1) (make-term 0 -1))))
-(define p4 (make-polynomial 'x (list (make-term 3 1) (make-term 0 -1))))
+;(define p3 (make-polynomial 'x (list (make-term 2 1) (make-term 0 -1))))
+;(define p4 (make-polynomial 'x (list (make-term 1 1) (make-term 0 -1))))
 
-(div p3 p4)
+;(div p3 p4) ;(polynomial x (2 4) (1 5) (0 30))

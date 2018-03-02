@@ -1,4 +1,4 @@
-(load "2-4-3.scm") ;引入install-rect-package 和 install-imag-package
+(load "2-4-3.scm") ;引入install-rect-package 和 install-pola-package
 
 (define (add x y) (apply-generic 'add x y))
 (define (sub x y) (apply-generic 'sub x y))
@@ -9,12 +9,18 @@
 
 (define (install-scheme-number-package)
   (define (tag x) (attach-tag 'scheme-number x))
+  (define (gcd a b)
+    (if (= b 0)
+        a
+        (gcd b (remainder a b))))
+
   (put 'add '(scheme-number scheme-number) (lambda (x y) (tag (+ x y))))
   (put 'sub '(scheme-number scheme-number) (lambda (x y) (tag (- x y))))
   (put 'mul '(scheme-number scheme-number) (lambda (x y) (tag (* x y))))
   (put 'div '(scheme-number scheme-number) (lambda (x y) (tag (/ x y))))
   (put 'equ? '(scheme-number scheme-number) (lambda (x y) (= x y)))  ;practise2.79
   (put '=zero? '(scheme-number) (lambda (x) (= x 0)))  ;practise2.80
+  (put 'gcd '(scheme-number scheme-number) gcd) ;practise2.93
   (put 'make 'scheme-number (lambda (x) (tag x)))
   'done
 )
@@ -48,6 +54,11 @@
   (put '=zero? '(rational) (lambda (x) (=zero?-rat x)))
 
   (put 'make 'rational (lambda (x y) (tag (make-rat x y))))
+
+  ;for practise2.85
+  (put 'numer 'rational numer)
+  (put 'denom 'rational denom)
+
   'done
 )
 
@@ -58,7 +69,7 @@
   (define (make-from-real-imag x y)
     ((get 'make-from-real-imag 'rect) x y))
   (define (make-from-mag-ang r a)
-    ((get 'make-from-mag-ang 'polar) r a))
+    ((get 'make-from-mag-ang 'pola) r a))
 
   (define (tag z) (attach-tag 'complex z))
   (define (add-complex z1 z2)
@@ -82,10 +93,10 @@
       (= (imag-part z) 0))
   )
 
-  (put 'add '(complex complex) (lambda (z1 z2) (tag (add-comlex z1 z2))))
-  (put 'sub '(complex complex) (lambda (z1 z2) (tag (sub-comlex z1 z2))))
-  (put 'mul '(complex complex) (lambda (z1 z2) (tag (mul-comlex z1 z2))))
-  (put 'div '(complex complex) (lambda (z1 z2) (tag (div-comlex z1 z2))))
+  (put 'add '(complex complex) (lambda (z1 z2) (tag (add-complex z1 z2))))
+  (put 'sub '(complex complex) (lambda (z1 z2) (tag (sub-complex z1 z2))))
+  (put 'mul '(complex complex) (lambda (z1 z2) (tag (mul-complex z1 z2))))
+  (put 'div '(complex complex) (lambda (z1 z2) (tag (div-complex z1 z2))))
 
   ;practise2.79 & 2.80
   (put 'equ? '(complex complex) (lambda (z1 z2) (equ?-complex z1 z2)))

@@ -1,22 +1,22 @@
 (load "2-5-1.scm")
 
-(define (raise-scheme-number x)
-  (make-rational x 1))
-
-(define (raise-rational x)
-  (make-complex-from-real-imag x 0))
-
-(put 'supertype 'scheme-number raise-scheme-number) ;better to be added in package
-(put 'supertype 'rational raise-rational) ;better to be added in package
-
 (define (scheme-number-complex n)
   (make-complex-from-real-imag (contents n) 0))
 
 (define (scheme-number-rational n)
   (make-rational n 1))
 
+(define (rational-complex x)
+  (make-complex-from-real-imag
+    (/ (car (contents x)) (cdr (contents x))) 0) ;both real and img can only be number at the moment
+)
+
 (put-coercion 'scheme-number 'rational scheme-number-rational)
 (put-coercion 'scheme-number 'complex scheme-number-complex)
+(put-coercion 'rational 'complex rational-complex)
+
+(put 'supertype 'scheme-number scheme-number-rational) ;better to be added in package
+(put 'supertype 'rational scheme-number-complex) ;better to be added in package
 
 (define (raise x)
   (let ((proc (get 'supertype (type-tag x))))
@@ -58,4 +58,10 @@
 ;test case
 (install-rational-package)
 (install-scheme-number-package)
-(add 3 (make-rational 1 3)) ;(list rational (cons 10 3))
+(install-complex-package)
+
+;(raise (make-rational 1 3))
+; (add 3 (make-rational 1 3)) ;(list 'rational (cons 10 3))
+; (mul 3 (make-rational 1 3)) ;(list 'rational (cons 1 1))
+; (add (make-rational 1 3) (make-complex-from-real-imag 3 4)) ;(list 'complex 'rect (cons 10/3 4))
+; (mul (make-rational 1 3) (make-complex-from-real-imag 3 4))

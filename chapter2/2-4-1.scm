@@ -9,7 +9,7 @@
 ;Ben的实现,用直角坐标(rect)计算real-part,imag-part, magnitude, angle, 并实现给定坐标的构造函数
 (define (real-part-rect z) (car z))
 
-(define (imag-part-rect z) (cadr z))
+(define (imag-part-rect z) (cdr z))
 
 (define (magnitude-rect z)
   (sqrt (+ (square (real-part-rect z)) (square (imag-part-rect z)))))
@@ -29,7 +29,7 @@
 
 (define (magnitude-pola z) (car z))
 
-(define (angle-pola z) (cadr z))
+(define (angle-pola z) (cdr z))
 
 (define (make-from-real-imag-pola x y) (cons (sqrt (+ (square x) (square y))) (atan y x)))
 
@@ -50,7 +50,7 @@
 ;取得复数表示内容
 (define (contents datum)
   (if (pair? datum)
-    (cadr datum)
+    (cdr datum)
     (error "Bad contented datum")
   )
 )
