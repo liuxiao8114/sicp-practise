@@ -1,3 +1,5 @@
+(load "util.scm")
+
 (define (sum-primes a b)
   (define (iter k sum)
     (cond ((> k b) sum)
@@ -30,7 +32,7 @@
   )
 )
 
-(cons-stream <a> <b>) ;is equivalent to (cons <a> (delay <b>))
+;(cons-stream <a> <b>) ;is equivalent to (cons <a> (delay <b>))
 
 (define (stream-car l) (car l))
 (define (stream-cdr l) (force (cdr l)))
@@ -92,7 +94,7 @@
 ;;The stream implementation in action
 (stream-car
   (stream-cdr
-    (stream-filter prime? (stream-enum-interval 10000 100000))))
+    (stream-filter prime? (stream-enumerate-interval 10000 100000))))
 
 ;step 1: enum
 (cons-stream
@@ -110,8 +112,8 @@
 ;step 3: filter(if prime)
 (stream-cdr
   (cons-stream
-    (stream-car (stream-enum-interval 10007 100000))
-    (stream-filter pred (stream-cdr (stream-enum-interval 10007 100000)))))
+    (stream-car (stream-enumerate-interval 10007 100000))
+    (stream-filter prime? (stream-cdr (stream-enumerate-interval 10007 100000)))))
 
 
 ;;Implementing delay and force

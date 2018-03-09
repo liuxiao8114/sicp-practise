@@ -20,6 +20,7 @@
 (define fib (fibgen 0 1))
 
 ;self impletation, no delay, out of memory
+;这种写法的sieve不会延迟求值(在infinite stream下无限自循环求值sieve)
 (define (sieve stream)
   (if (stream-null? stream)
     the-empty-stream
@@ -45,7 +46,15 @@
 )
 
 (define primes (sieve (integers-starting-from 2)))
-;(stream-ref primes 50) ;233
+;(cons-stream
+;  (stream-car (cons-stream 2 (integers-starting-from 3)))
+;  (sieve
+;    (stream-filter
+;      (lambda (x) (not (divisible? x (stream-car stream))))
+;      (stream-cdr (cons-stream 2 (integers-starting-from 3)))
+;    )
+;  )
+;)
 
 ;test case
 (stream-ref no-sevens 100) ;117
@@ -62,7 +71,7 @@
 (define integers (cons-stream 1 (add-streams ones integers)))
 
 ;(add-streams ones integers)
-;<=> (cons-stream 2 (stream-map + ones (add-streams ones integers)))
+;<=> (cons-stream 2 (stream-map + (stream-cdr ones) (stream-cdr integers)))
 
 ;(integers)
 ;(cons-stream 1 (stream-map + ones integers))
@@ -72,11 +81,8 @@
 ;    2
 ;    (apply
 ;      stream-map
-;      (list + ones (add-streams ones integers)))))
-;(cons-stream 1 (cons-stream 2 (stream-map + ones (add-streams ones integers)))
-;(cons-stream 1 (cons-stream 2 (cons-stream 3 (stream-map + ones (stream-map + ones (add-streams ones integers))))))
-;
-;
+;      (list + (stream-cdr ones) (stream-cdr integers)))))
+
 (define fibs
   (cons-stream
     0

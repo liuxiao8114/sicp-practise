@@ -23,8 +23,10 @@
 (cons (apply + (map car args))
   (apply map (cons + (map cdr args))))
 
-(apply map (cons + '((1 2) (3 4)))) ;(4 6)
-(apply map (list + '(1 2) '(3 4))) ;(4 6)  + but not '+
+(apply map (cons + '((1 2) (3 4))))
+;<=> (map + '(1 2) '(3 4)) => (4 6)
+(apply map (list + '(1 2) '(3 4)))
+;<=> (map + '(1 2) '(3 4)) => (4 6)
 (apply map (cons* (list + '(1 2) '(3 4)))) ;(4 6)
 (map + '(1 2) '(3 4))
 ;   (cons* obj1 obj2 ... objN-1 objN)
