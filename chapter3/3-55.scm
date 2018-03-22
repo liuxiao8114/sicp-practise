@@ -12,7 +12,7 @@
   (if (or (stream-null? s) (= k n))
     'done
     (begin
-      (proc s)
+      (proc (stream-car s))
       (stream-for-each proc (stream-cdr s) (+ k 1) n)
     )
   )

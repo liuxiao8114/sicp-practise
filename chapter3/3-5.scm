@@ -28,7 +28,7 @@
       (p randx randy)
     )
   )
-  ;正方形面积是其内切圆的4倍
+  ;注意题目所选取的两个点(2,4), (8,10)恰是该圆的外切正方形，而正方形的面积是其内切圆的4倍
   (* 4 (exact->inexact (monte-cario count round-test)))
 )
 
