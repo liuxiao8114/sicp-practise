@@ -1,5 +1,5 @@
 ;3.5.5 Modularity of Functional Programs and Modularity of Objects
-(define (rand-update x) (+ 1 (random 10000)))
+(define (rand-update x) (+ 1 (random 9999)))
 (define init-x 1)
 
 (define rand-stream
@@ -30,3 +30,11 @@
 )
 
 (define pi (stream-map (lambda (p) (sqrt (/ 6 p))) (monte-carlo cesaro-stream 0 0)))
+
+;;A functional-programming view of time
+(define (stream-withdraw balance amount-stream)
+  (cons-stream
+    balance
+    (stream-withdraw (- balance (stream-car amount-stream)) (stream-cdr amount-stresam))
+  )
+)

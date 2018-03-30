@@ -4,7 +4,7 @@
   )
 )
 
-(define (monte-cario trials experiment)
+(define (monte-carlo trials experiment)
   (define (iter trials-remain trials-passed)
     (cond ((= 0 trials-remain) (/ trials-passed trials))
           ((experiment) (iter (- trials-remain 1) (+ trials-passed 1)))
@@ -29,7 +29,7 @@
     )
   )
   ;注意题目所选取的两个点(2,4), (8,10)恰是该圆的外切正方形，而正方形的面积是其内切圆的4倍
-  (* 4 (exact->inexact (monte-cario count round-test)))
+  (* 4 (exact->inexact (monte-carlo count round-test)))
 )
 
 (estimate-integral p 2 8 4 10 10000)
@@ -44,7 +44,7 @@
   (define (estimate-integral)
     (p (random-in-range x1 x2) (random-in-range y1 y2)))
 
-  (* (exact->inexact (monte-cario count estimate-integral)) 4)
+  (* (exact->inexact (monte-carlo count estimate-integral)) 4)
 )
 
 (calculate-pi p -1.0 1.0 -1.0 1.0 10000)

@@ -20,9 +20,21 @@
   dispatch
 )
 
+;deprecated.
 (define random-numbers
-  (cons-stream init-x (stream-map (lambda (x) (random-dispatch x)) random-numers)))
+  (cons-stream init (stream-map (lambda (x) (random-dispatch x)) random-numers)))
 
+; Produce a stream formulation of this same generator
+; that operates on an input stream of requests
+(define (rand type-stream)
+  (define iter-stream
+    (cons-stream
+      init
+      (stream-map (lambda (type next) ((random-dispatch type) next)) type-stream iter-stream)
+    )
+  )
+  iter-stream
+)
 
 (define (stream-ref s n)
   (if (= n 0)
@@ -30,7 +42,3 @@
     (stream-ref (stream-cdr s) (- n 1))
   )
 )
-
-((stream-ref random-numbers 4) 'generate)
-
-(define (random-)
