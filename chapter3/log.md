@@ -35,6 +35,19 @@ With streams, the cdr is evaluated at selection time.
 所以当过程中产生递归调用stream时，如果递归中参数的stream就是原stream应避免直接递归。
 (比较partial-sums, sqrt-stream 和 mul-series, pi-summands的实现差异)
 
+2019/3/5
+1. memolize的参数proc是delay, 生成新的stream而不会导致不能利用memorize的结果
+
+  function memo(delay) {
+    const table = new Table()
+    return stream => {
+      const result = table.lookup(stream)
+      if(result) return result
+      return table.insert(stream, delay(stream))
+    }
+  }
+2.
+
 3-59.scm
 cosine-series与sine-series能实现的原因正如正文中的对prime所解释的:
 at any point, enough of the primes stream has been generated
@@ -55,3 +68,19 @@ to test the primality of the numbers we need to check next.
 2018/03/08
 3-60.scm
 两种多项式分解的不同解法，注意每个stream的实现。
+
+2019/03/13
+3.5.4
+(define int
+  (cons-stream initial-value
+    (add-streams (scale-stream integrand dt) int)
+  )
+)
+
+The interpreter's ability to deal with such an implicit definition depends on
+the delay that is incorporated into cons-stream. Without this delay, the interpreter
+could not construct int before evaluating both arguments to cons-stream, which would
+require that int already be defined.
+
+2019/03/14
+3-27

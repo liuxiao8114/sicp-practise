@@ -69,8 +69,8 @@
 ;;Implementing serializers
 
 (define (make-serializer)
-  (lambda (p)
-    (let ((m (make-mutex)))
+  (let ((m (make-mutex)))
+    (lambda (p)
       (define (serialize-p . args)
         (m 'acquire)
         (let ((val (apply p args)))

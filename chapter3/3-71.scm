@@ -95,3 +95,53 @@
 )
 
 (display-stream ramanujan-numbers-b)
+
+;;; 2019
+(define (merge-weight s1 s2 weight)
+  ()
+)
+
+(define (pairs s1 s2 weight-method)
+  (cons-stream
+    (list (stream-car s1) (stream-car s2))
+    (merge-weight
+      (stream-map (lambda (x) (* x (stream-car s1))) (stream-cdr s2))
+      (pairs (stream-cdr s1) (stream-cdr s2))
+      weight-method
+    )
+  )
+)
+
+(define (cube-weight x) (+ (cube (car x) (cube (cadr x)))))
+(define cube-pairs (pairs integers integers cube-weight))
+(define (iter-stream s1 s2)
+  (let (l1 (stream-car s1))
+       (l2 (stream-car s2))
+    (if (= (cube-weight l1) (cube-weight l2))
+      (cons-stream (iter-stream (stream-cdr s1) (stream-cdr s2)))
+      (iter-stream (stream-cdr s1) (stream-cdr s2))
+    )
+  )
+)
+
+(define ramanujan-numbers (iter cube-pairs (stream-cdr cube-pairs)))
+
+(define (stream-map proc .streams)
+  (cons-stream
+    (apply proc (map stream-car streams))
+    (apply stream-map (cons proc (map stream-cdr streams)))
+  )
+)
+
+(define (stream-filter fn .streams)
+  (cond ((stream-null? (stream-car streams)) the-empty-stream)
+        ((apply fn (map stream-car streams))
+          (cons-stream
+            ()
+            (apply stream-filter (cons fn (map stream-cdr streams)))
+          )
+        )
+        (else (apply stream-filter (cons fn (map stream-cdr streams)))))
+
+  )
+)

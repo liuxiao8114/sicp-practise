@@ -84,3 +84,36 @@
 (define stream-a (weighted-pairs integers integers a-weight))
 
 (display-stream stream-a)
+
+
+(define (merge s1 s2)
+  (cond ((stream-null? s1) s2)
+        ((stream-null? s2) s1)
+        (else
+          (let (a1 (stream-car s1))
+               (a2 (stream-car s2))
+            (cond ((< a1 a2) (cons-stream a1 (merge (stream-cdr s1) s2)))
+                  ((> a1 a2) (cons-stream a2 (merge s1 (stream-cdr s2))))
+                  (else (cons-stream a1 (merge (stream-cdr s1) (stream-cdr s2))))
+            )
+          )
+        )
+  )
+)
+
+(define (merge-weight s1 s2 weight)
+  (cond ((stream-null? s1) s2)
+        ((stream-null? s2) s1)
+        (else
+          (let (a1 (stream-car s1))
+               (a2 (stream-car s2))
+            (cond ((< (weight a1) (weight a2)) (cons-stream a1 (merge (stream-cdr s1) s2)))
+                  ((> (weight a1) (weight a2)) (cons-stream a2 (merge s1 (stream-cdr s2))))
+                  (else (cons-stream a1 (merge-weight (stream-cdr s1) (stream-cdr s2))))
+            )
+          )
+        )
+  )
+)
+
+(merge-weight s1 s2 (lambda(l) (+ (car l) (cadr l))))
