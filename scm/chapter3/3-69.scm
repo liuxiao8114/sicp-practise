@@ -58,3 +58,27 @@
 )
 
 (display-stream pythagorean-triples)
+
+(define (interleave i j k)
+  (cons-stresam
+    (list (stream-car i) (stream-car j) (stream-car k))
+    (interleave j k (stream-cdr i))
+  )
+)
+
+(define triple-list )
+(define triples
+  (stream-filter
+    (lambda (l) (= (square (caddr l)) (+ (square (car l)) (square (cadr l)))))
+    triple-list
+  )
+)
+
+(define (integral integrand initial-value dt)
+  (define int (cons-stream initial-value (add-streams (scale-stream integrand dt) int)))
+  int
+)
+
+(define (RC r  c dt)
+  ()
+)
