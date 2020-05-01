@@ -8,6 +8,7 @@
           ((eq? m 'deposit) deposit)
           (else (error "UNKNOWN request -- " m))
     )
+  )
   dispatch
 )
 

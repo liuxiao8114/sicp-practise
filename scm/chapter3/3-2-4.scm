@@ -7,7 +7,7 @@
     (average guess (/ x guess)))
 
   (define (sqrt-iter guess)
-    (if (good-enought? guess)
+    (if (good-enough? guess)
         guess
         (sqrt-iter (improve guess))
     )
@@ -17,6 +17,8 @@
 )
 
 (sprt 10)
+
+
 ----------------------------
 |全局:
 |  sqrt                   |
@@ -24,6 +26,15 @@
 |  过程:(sqrt-iter 1.0)   |
 |                         |
 ----------------------------
+  ^
+  | ;;first call
+  | (sqrt-iter 1.0)
+----------------------------
+| E1 10           |
+| good-enough?    |
+| improve         |
+| sqrt-iter       |
+-------------------
   ^
   |
   |
@@ -33,5 +44,4 @@
 | improve         |
 | sqrt-iter       |
 -------------------
-
-(sqrt-iter 1.0)
+;;inner call

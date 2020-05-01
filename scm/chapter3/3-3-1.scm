@@ -1,3 +1,21 @@
+
+;; Mutation is juest assignment
+
+;; cons in chpater 2.1.3
+(define (cons x y)
+  (define (dispatch z)
+    (cond ((eq? z 'car) x)
+          ((eq? z 'cdr) y)
+          (else (error "Unkown operation" z))
+    )
+  )
+  dispatch
+)
+
+(define (car z) (z 'car))
+(define (cdr z) (z 'cdr))
+
+;; cons in chpater 3.3.1
 (define (cons x y)
   (define (set-x! v) (set! x v))
   (define (set-y! v) (set! y v))
