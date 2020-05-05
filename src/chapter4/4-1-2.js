@@ -1,19 +1,27 @@
-export function isSelfEvaluating(exp) {
+function isSelfEvaluating(exp) {
   return typeof exp === 'number' || typeof exp === 'string'
 }
 
-export function isVariable(exp) {
+function isVariable(exp) {
 
 }
 
-export function isQuoted(exp) {
+function isQuoted(exp) {
 
 }
 
-export function isAssignment(exp) {
+function isAssignment(exp) {
 
 }
 
 function taggedList(exp, tag) {
 
+}
+
+module.exports = {
+  isSelfEvaluating,
+  isVariable,
+  isQuoted,
+  isAssignment,
+  taggedList,
 }

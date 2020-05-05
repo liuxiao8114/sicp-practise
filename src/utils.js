@@ -1,14 +1,26 @@
-export function isPair(p) {
+module.exports = {
+  isPair,
+  list: list(),
+}
+
+function isPair(p) {
   return p instanceof Cons
 }
 
-export function list(...values) {
-  function iter(values, i) {
+function list(pattern) {
+  if(!pattern)
+    pattern = recursivePairs
+
+  function recursivePairs(values, i) {
     if(!values[i]) return null
-    return new Cons(values[i], iter(values, i + 1))
+    return new Cons(values[i], recursivePairs(values, i + 1))
   }
 
-  return iter(values, 0)
+  function queueList() {
+
+  }
+
+  return (...values) => pattern(values, 0)
 }
 
 function reverseList(list) {
@@ -43,35 +55,45 @@ Cons.prototype = {
   }
 }
 
-function Node(value, next, prev) {
+function Node(value, next = null, prev = null) {
   this.next = next
   this.prev = prev
   this.value = value
 }
 
-function Queue() {
+function Queue(...values) {
   this.first = null
   this.rear = null
+
+  this.init(values)
 }
 
-Queue.prototype.enqueue = function(n) {
-  if(!(n instanceof Node)) {
-    n = new Node(n)
+Queue.prototype = {
+  init(...values) {
+    for(let value of values) {
+      this.enQueue(value)
+    }
+  },
+  enQueue(a) {
+    if(!this.first)
+      this.rear = this.first = new Node(a)
+    else {
+      const temp = this.first
+      this.first = new Node(a, temp)
+    }
+  },
+  deQueue() {
+    if(this.isEmpty())
+      throw new Error('Queue is empty and cannot deQueue')
+    const temp = this.rear
+
+    if(temp === this.first)
+      this.first = this.rear = null
+  },
+  search(s) {
+
+  },
+  isEmpty() {
+    return !this.first || !this.rear
   }
-  if(this.first === null) {
-    this.first = n
-    this.rear = n
-  } else {
-    let temp = this.rear
-    temp.next = n
-    this.rear = n
-  }
-}
-
-Queue.prototype.search = function() {
-
-}
-
-Queue.prototype.dequeue = function() {
-
 }
