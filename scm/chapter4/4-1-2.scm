@@ -24,8 +24,8 @@
 (define (assignment-value exp) (caddr exp))
 
 ;;(define <var> <value>) or
-;;(define (<var> <parameters1> <parameters2> <parameters3>...) (<body>))
-;;<=> (define <var> (lambda (<parameters1> <parameters2> <parameters3>) (<body>)))
+;;(define (<var> <parameter1> <parameter2> <parameter3>...) (<body>))
+;;<=> (define <var> (lambda (<parameter1> <parameter2> <parameter>) (<body>)))
 (define (definition? exp) (tagged-list? exp 'define))
 (define (definition-variable exp)
   (if (symbol? (cadr exp))
@@ -33,7 +33,6 @@
     (caddr exp)
   )
 )
-
 (define (definition-value exp)
   (if (symbol? (cadr exp))
     (caddr exp)
@@ -45,14 +44,22 @@
 (define (lambda? exp) (tagged-list? exp 'lambda))
 (define (lambda-parameters lambda) (cadr lambda))
 (define (lambda-body lambda) (caddr lambda))
+
 (define (make-lambda parameters body)
   (cons 'lambda (cons parameters body)))
 
 ;;if
-;;(if (exp) (if-predicate) (if-consequent))
+;;(if (<if-predicate>) (<if-consequent>) (<if-alternative>))
 (define (if? exp) (tagged-list? exp 'if))
 (define (if-predicate exp) (cadr exp))
-(define (if-consequent))
+(define (if-consequent exp) (caddr exp))
+(define (if-alternative exp)
+  (if (not (null? (cdddr exp)))
+      (cadddr exp)
+      'false
+  )
+)
+
 (define (make-if predicate consequent alternative)
   (list 'if predicate consequent alternative)
 )
@@ -81,7 +88,12 @@
 (define (rest-operands ops) (cdr ops))
 
 ;;cond
-;;(cond ((condition) <exp>) (else <exp>))
+;;(cond
+;;  ((<cond-predicate> <cond-actions>) <exp1>)
+;;  ((<cond-predicate> <cond-actions>) <exp2>)
+;;  ...
+;;  (else <exp>))
+;;
 (define (cond? exp) (tagged-list? exp 'cond))
 (define (cond-clauses exp) (cdr exp))
 
