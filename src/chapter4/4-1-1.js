@@ -1,3 +1,14 @@
+const {
+  isVariable,
+  isSelfEvaluating,
+  isQuoted,
+  isDefinition,
+  isAssignment,
+  isLambda, getLambdaParameters, getLambdaBody,
+} = require('./4-1-2.js')
+
+const listValues = require('./4-1.js')
+
 function sicpEval(exp, env) {
   if(isSelfEvaluating(exp))
     return exp
@@ -32,10 +43,9 @@ function sicpApply(procedure, args) {
 
 // Conditionals
 function evalIf(exp, env) {
-  if(!!sicpEval(ifPredicate(exp), env))
+  sicpEval(ifPredicate(exp), env) ?
     sicpEval(ifConsequent(exp), env)
-  else
-    sicpEval(ifAlternative(exp), env)
+    : sicpEval(ifAlternative(exp), env)
 }
 
 // Sequences
@@ -56,6 +66,20 @@ function evalDefinition(exp, env) {
 
 }
 
-function listValues(exp, env) {
-  return
-} 
+// get and set
+function getFirstOperand(exp) {
+
+}
+
+function getFirstExp(exps) {
+
+}
+
+function getRestExps(exps) {
+
+}
+
+// is... and if...
+function ifConsequent(exp) {
+
+}
