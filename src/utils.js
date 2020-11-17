@@ -61,7 +61,7 @@ List.prototype.reverse = function() {
     if(l === null) return result
     return iter(l.getCdr(), new Cons(l.getCar(), result))
   }
-  
+
   return iter(this)
 }
 
