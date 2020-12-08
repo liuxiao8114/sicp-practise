@@ -26,3 +26,10 @@ We take care of the primitive cases by stipulating that
 
 - the
 ```
+
+## 1.2 Procedures and the Processes They Generate
+
+## 1.3 Formulating Abstractions with Higher-Order Procedures
+```
+One of the things we should demand from a powerful programming language is the ability to build abstractions by assigning names to common patterns and then to work in terms of the abstractions directly.Procedures provide this ability.
+```
