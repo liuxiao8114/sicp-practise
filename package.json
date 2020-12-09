@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "jest": {
+    "rootDir": "test/chapter3"
+  },
   "scripts": {
     "test": "jest"
   },
