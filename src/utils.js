@@ -1,4 +1,5 @@
 module.exports = {
+  Cons,
   isPair,
   List,
   Queue,
@@ -32,9 +33,19 @@ Cons.prototype = {
     return this.cdr.car
   },
   getCddr() {
+    if(!isPair(this.cdr))
+      throw new Error(`no cadr in pair: ${this.toString()}`)
+    return this.cdr.cdr
+  },
+  getCaddr() {
+
+  },
+  getCdddr() {
 
   },
   toString() {
+    if(!this.car && !this.cdr)
+      return "'()"
     return `(${this.car}, ${this.cdr})`
   },
 }
@@ -42,14 +53,23 @@ Cons.prototype = {
 Cons.prototype.valueOf = Cons.prototype.toString
 
 function List(...values) {
-  function recursivePairs(values, i) {
-    console.log(values[i])
-
-    if(!values[i]) return null
-    return Cons.call(this, values[i], recursivePairs(values, i + 1))
+  // function recursivePairs(values, i) {
+  //   // console.log(values[i])
+  //
+  //   if(i === values.length) return null
+  //   return new Cons(values[i], recursivePairs(values, i + 1))
+  // }
+  //
+  // return recursivePairs(values, 0)
+  if(values.length === 0)
+    return null
+  else if(values.length === 1) {
+    this.car = values[0]
+    this.cdr = null
+  } else {
+    this.car = values[0]
+    this.cdr = new List(...values.slice(1))
   }
-
-  return recursivePairs(values, 0)
 }
 
 List.prototype = Object.create(Cons.prototype, {
@@ -81,6 +101,9 @@ function Queue(...values) {
 
 Queue.prototype = {
   init(...values) {
+    this.first = null
+    this.rear = null
+    
     for(let value of values)
       this.push(value)
   },

@@ -11,6 +11,6 @@ describe('chapter 1-3-3', () => {
   })
 
   it('tests sqrt', () => {
-    expect(sqrt(4)).toEqual(2.0)
+    expect(sqrt(4).toFixed(2)).toEqual(2.0.toFixed(2))
   })
 })
