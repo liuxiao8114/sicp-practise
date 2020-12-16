@@ -103,7 +103,7 @@ Queue.prototype = {
   init(...values) {
     this.first = null
     this.rear = null
-    
+
     for(let value of values)
       this.push(value)
   },
