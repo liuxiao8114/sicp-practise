@@ -1,7 +1,7 @@
 // 4.1.1 The core of the evaluator
 // some parts are implemented in the fellow
 const {
-  isVariable, lookupVariableValue,
+  isVariable,
   isSelfEvaluating,
   isQuoted, getTextQuotation,
   isDefinition,
@@ -13,11 +13,12 @@ const {
 } = require('./4-1-2.js')
 
 const {
+  // Representing procedures
   isPrimitiveProcedure, applyPrimitiveProcedure,
-  setVariableValue
+  createProcedure, isCompondProcedure, getProcedureParameters, getProcedureBody, getProcedureEnvironment,
+  // Operations on Evnvironments
+  lookupVariableValue, extendEnvironment, $defineVariable, $setVariableValue,
 } = require('./4-1-3.js')
-
-// const listValues = require('./4-1.js')
 
 function sicpEval(exp, env) {
   if(isSelfEvaluating(exp))
@@ -87,7 +88,7 @@ function evalSequence(exps, env) {
 
 // Assignments and definitions
 function evalAssignment(exp, env) {
-  setVariableValue(
+  $setVariableValue(
     assignmentVariable(exp),
     sicpEval(assignmentValue(exp), env),
     env
