@@ -3,6 +3,12 @@ module.exports = {
   isPair,
   List,
   Queue,
+  display,
+}
+
+function display(x) {
+  console.log(x)
+  return x
 }
 
 function isPair(p) {
