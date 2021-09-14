@@ -6,9 +6,8 @@ module.exports = {
   display,
 }
 
-function display(x) {
-  console.log(x)
-  return x
+function display(x, method = console.log) {
+  return method(x) || x
 }
 
 function isPair(p) {

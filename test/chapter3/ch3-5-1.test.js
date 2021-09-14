@@ -60,15 +60,24 @@ describe('chapter 3-5-1 exercises', () => {
 
     const list = stream_enumerate_interval(1, 10)
 
-    let x = stream_map(display, list)
-    console.log('5: ' + stream_ref(x, 5))
-    console.log('7: ' + stream_ref(x, 7))
+    let expectCounter = 1 // 1 will be called in display() at init
+    let x = stream_map(
+      i => display(i, () => expect(i).toBe(expectCounter++)),
+      list
+    )
 
-    console.log(`----------------------`)
+    stream_ref(x, 5)
+    expectCounter = 2 // as x is inited, display(1) will never be called again.
+    stream_ref(x, 7)
 
-    let y = stream_map_op(display, list)
-    console.log('5: ' + stream_ref(y, 5))
-    console.log('7: ' + stream_ref(y, 7))
+    expectCounter = 1 // 1 will be called in display() at init
+    let y = stream_map_op(
+      i => display(i, () => expect(i).toBe(expectCounter++)),
+      list
+    )
+
+    stream_ref(y, 5)
+    stream_ref(y, 7)
   })
 
   it('exec3.52', () => {
