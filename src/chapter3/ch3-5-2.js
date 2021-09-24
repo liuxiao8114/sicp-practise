@@ -1,4 +1,4 @@
-const { pair, car } = require('./utils')
+const { pair, car, square } = require('./utils')
 const { stream_cdr, stream_filter, stream_map, memo } = require('./ch3-5-1')
 
 function integersStartingFrom(n) {
@@ -41,6 +41,7 @@ function add_streams(s1, s2) {
 }
 
 const integers = pair(1, () => add_streams(integers, ones))
+const integersMemo = pair(1, memo(() => stream_map2_memo((x, y) => x + y, integers, ones)))
 /*
   add_stream(integers, ones)
   <=> stream_map2((x, y) => x + y, integers, ones)
@@ -57,8 +58,6 @@ function stream_scale(stream, factor) {
 }
 
 const double = pair(1, () => stream_scale(double, 2))
-
-function square(x) { return x * x }
 
 const primes = pair(2, () => stream_filter(isPrime, integersStartingFrom(3)))
 
@@ -81,14 +80,27 @@ module.exports = {
   add_streams,
   fibgen,
   integers,
+  integersMemo,
   fibs,
   ones,
   double,
   primes,
 }
+
+// const { pairs } = require('./ch3-5-3')
+// function triples(s, t, u) {
+//   return stream_filter(
+//     x => square(x.car.car) + square(x.car.cdr.car) === square(x.cdr.car),
+//     pairs(pairs(s, t), u)
+//   )
+// }
+//
+// const s = triples(integersMemo, integersMemo, integersMemo)
+//
+// stream_cdr(s)
+
 /*
 $(item:"requestName")$(item:"year")年$(item:"month")月分
-
 output\作業時間集計表_$(item:"year")年$(item:"month")月分_$(item:"requestName")様_$(item:"projectId")_$(val:SYS_DATE_TXT)$(val:SYS_TIME_TXT).xlsx
 
 */

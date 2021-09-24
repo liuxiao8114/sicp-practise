@@ -4,6 +4,11 @@ module.exports = {
   List,
   Queue,
   display,
+  square,
+}
+
+function square(x) {
+  return x * x
 }
 
 function display(x, method = console.log) {

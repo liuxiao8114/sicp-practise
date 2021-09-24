@@ -4,19 +4,20 @@ const SRC_ROOT = `../../src/chapter3/`
 const { isNull, car, pair } = require(path.join(SRC_ROOT, 'utils'))
 
 const {
-  stream_cdr, stream_ref, stream_filter,
+  stream_cdr, stream_ref, stream_filter, stream_map,
   memo
 } = require(path.join(SRC_ROOT, 'ch3-5-1'))
 
 const {
   integersStartingFrom, isDivisible, fibgen,
   stream_map2, stream_map2_memo, stream_scale, add_streams,
-  integers, fibs, ones, double, primes,
+  integers, fibs, double, primes,
 } = require(path.join(SRC_ROOT, 'ch3-5-2'))
 
 const EXPECT_FIBS = [ 0, 1, 1, 2, 3, 5, 8, 13, 21 ]
 const EXPECT_PRIMES = [ 2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31 ]
 const MAX = 10
+const TO_FIXED = 5
 
 function expectIteration(stream, expectList) {
   let next = stream
@@ -27,11 +28,11 @@ function expectIteration(stream, expectList) {
   })
 }
 
-function consoleLogIteration(stream) {
+function consoleLogIteration(stream, counter = TO_FIXED) {
   let next = stream,
       result = ``
 
-  for(let i = 0; i < MAX; i++) {
+  for(let i = 0; i < counter; i++) {
     result += `${i}: ${car(next)}\r\n`
     next = stream_cdr(next)
   }
@@ -86,6 +87,17 @@ describe('ch3-5-2 implicit stream test cases', () => {
 })
 
 describe('chapter 3-5-2 exercises', () => {
+  function partial_sums(stream) {
+    function iter(sum, s) {
+      return pair(
+        sum + car(s),
+        () => iter(sum + car(s), stream_cdr(s))
+      )
+    }
+
+    return iter(0, stream)
+  }
+
   it('exec3.53', () => {
     const s = pair(1, () => add_streams(s, s)) //  worked same as double
   })
@@ -111,17 +123,6 @@ describe('chapter 3-5-2 exercises', () => {
   })
 
   it('exec3.55', () => {
-    function partial_sums(stream) {
-      function iter(sum, s) {
-        return pair(
-          sum + car(s),
-          () => iter(sum + car(s), stream_cdr(s))
-        )
-      }
-
-      return iter(0, stream)
-    }
-
     const psIntegers = partial_sums(integers)
 
     let next = psIntegers,
@@ -194,10 +195,20 @@ describe('chapter 3-5-2 exercises', () => {
         () => add_streams(noMemoFibs, stream_cdr(noMemoFibs))))
 
     next = noMemoFibs
-    for(let i = 0; i < 20; i++)
+    for(let i = 0; i < 6; i++)
       next = stream_cdr(next)
 
-    expect(calledCounter > 20000).toBe(true)
+    expect(calledCounter).toBe(26)
+    /*
+      i < 0: 0
+      i < 1: 0
+      i < 2: 1
+      i < 3: last(1) + current(1 + 1) = 3
+      i < 4: last(3) + current(1 + 2 + 1) = 7
+      i < 5: last(7) + current(1 + 4 + 2) = 14
+      i < 6: last(14) + current(1 + 7 + 4) = 26
+      i < 7: last(26) + current(1 + 12 + 7) = 46
+    */
 
     calledCounter = 0
     const memoFibs = pair(
@@ -229,21 +240,46 @@ describe('chapter 3-5-2 exercises', () => {
     expectIteration(expand(3, 8, 10), [ 3, 7, 5, 0, 0, 0, 0, 0 ])
   })
 
-  it('exec3.59', () => {
-    // a.
-    const C = 10
+  it('exec3.59, 3.60', () => {
     function integrate_series(stream) {
-      return stream_map2((x, y) => x / y, stream, integers)
+      return stream_map(x => 1/x, stream)
     }
 
-    const one_series = integrate_series(ones)
+    // a.
+    const C = 10
+    const one_series = pair(C, () => integrate_series(integers))
+    // consoleLogIteration(one_series)
+
     // b.
     const exp_series = pair(1, () => integrate_series(exp_series))
-    // const cosine_series = pair(1, () => integrate_series(cosine_series))
-    // const sine_series = ''
+    const cosine_series = pair(1, () => stream_map(x => x%2 === 1?0:1, integrate_series(cosine_series)))
+    const sine_series = pair(0, () => stream_map(x => x%2 === 1?0:1, integrate_series(sine_series)))
 
-    // expectIteration(exp_series, Array(MAX).fill(C))
-    // consoleLogIteration(one_series)
-    // consoleLogIteration(exp_series)
+    expectIteration(exp_series, Array(MAX).fill(1))
+    expectIteration(cosine_series, Array(MAX).fill(null).map((x, i) => i % 2 === 0?1:0))
+    expectIteration(sine_series, Array(MAX).fill(null).map((x, i) => i % 2 === 0?0:1))
+
+    // exec3.60
+    // function mul_series(s1, s2) {
+    //   return pair(
+    //     car(s1) * car(s2),
+    //     () => add_streams(
+    //       add_streams(
+    //         stream_scale(stream_cdr(s1), car(s2)),
+    //         stream_scale(stream_cdr(s2), car(s1))
+    //       ),
+    //       mul_series(stream_cdr(s1), stream_cdr(s2))
+    //     )
+    //   )
+    // }
+    //
+    // const sin2xAddcos2xStream = partial_sums(
+    //   add_streams(
+    //     mul_series(cosine_series, cosine_series),
+    //     mul_series(sine_series, sine_series)
+    //   )
+    // )
+    //
+    // expectIteration(sin2xAddcos2xStream, Array(MAX).fill(1))
   })
 })

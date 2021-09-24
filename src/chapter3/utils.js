@@ -1,4 +1,4 @@
-const { isPair, Cons } = require('../utils')
+const { isPair, Cons, List } = require('../utils')
 
 module.exports = {
   ...require('../utils'),
@@ -6,6 +6,7 @@ module.exports = {
   cdr,
   isNull,
   pair,
+  list,
 }
 
 function car(p) {
@@ -26,4 +27,8 @@ function isNull(p) {
 
 function pair(a, b) {
   return new Cons(a, b)
+}
+
+function list(...values) {
+  return new List(...values)
 }
