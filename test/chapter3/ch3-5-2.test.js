@@ -88,14 +88,19 @@ describe('ch3-5-2 implicit stream test cases', () => {
 
 describe('chapter 3-5-2 exercises', () => {
   function partial_sums(stream) {
-    function iter(sum, s) {
-      return pair(
-        sum + car(s),
-        () => iter(sum + car(s), stream_cdr(s))
-      )
-    }
+    // function iter(sum, s) {
+    //   return pair(
+    //     sum + car(s),
+    //     () => iter(sum + car(s), stream_cdr(s))
+    //   )
+    // }
+    //
+    // return iter(0, stream)
 
-    return iter(0, stream)
+    // 3.5.3-Streams as signals' way:
+    const partial = pair(car(stream), () => add_streams(stream_cdr(stream), partial))
+
+    return partial
   }
 
   it('exec3.53', () => {

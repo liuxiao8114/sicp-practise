@@ -1,5 +1,5 @@
 const { pair, car, square } = require('./utils')
-const { stream_cdr, stream_filter, stream_map, stream_ref, memo } = require('./ch3-5-1')
+const { stream_cdr, stream_map, stream_ref, memo } = require('./ch3-5-1')
 
 function average(a, b) {
   return (a + b) / 2
@@ -72,6 +72,17 @@ function interleave(s1, s2) {
   )
 }
 
+// Streams as signals
+const { add_streams, stream_scale } = require('./ch3-5-2')
+function integral(integrand, inital_value, dt) {
+  const integ = pair(
+    inital_value,
+    () => add_streams(stream_scale(integrand, dt), integ)
+  )
+
+  return integ
+}
+
 module.exports = {
   sqrt_stream,
   pi_summands,
@@ -79,4 +90,5 @@ module.exports = {
   accelerated_sequence,
   pairs,
   interleave,
+  integral,
 }

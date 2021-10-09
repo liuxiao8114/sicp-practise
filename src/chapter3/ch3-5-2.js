@@ -40,6 +40,10 @@ function add_streams(s1, s2) {
   return stream_map2((x, y) => x + y, s1, s2)
 }
 
+function add_streams_memo(s1, s2) {
+  return stream_map2_memo((x, y) => x + y, s1, s2)
+}
+
 const integers = pair(1, () => add_streams(integers, ones))
 const integersMemo = pair(1, memo(() => stream_map2_memo((x, y) => x + y, integers, ones)))
 /*
@@ -78,6 +82,7 @@ module.exports = {
   stream_map2,
   stream_map2_memo,
   add_streams,
+  add_streams_memo,
   fibgen,
   integers,
   integersMemo,
@@ -98,9 +103,3 @@ module.exports = {
 // const s = triples(integersMemo, integersMemo, integersMemo)
 //
 // stream_cdr(s)
-
-/*
-$(item:"requestName")$(item:"year")年$(item:"month")月分
-output\作業時間集計表_$(item:"year")年$(item:"month")月分_$(item:"requestName")様_$(item:"projectId")_$(val:SYS_DATE_TXT)$(val:SYS_TIME_TXT).xlsx
-
-*/

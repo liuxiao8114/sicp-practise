@@ -5,17 +5,17 @@ const { Cons, isNull, car, pair, list, square } = require(path.join(SRC_ROOT, 'u
 const {
   memo,
   stream_cdr, stream_ref,
-  stream_map, stream_enumerate_interval, stream_filter
+  stream_map, stream_filter
 } = require(path.join(SRC_ROOT, 'ch3-5-1'))
 
 const {
-  stream_scale, add_streams, stream_map2_memo,
+  stream_scale, stream_map2_memo,
   integers, integersMemo
 } = require(path.join(SRC_ROOT, 'ch3-5-2'))
 
 const {
   sqrt_stream, pi_summands, euler_transform, accelerated_sequence,
-  pairs, interleave,
+  pairs, interleave, integral,
 } = require(path.join(SRC_ROOT, 'ch3-5-3'))
 
 const TO_FIXED = 5
@@ -287,5 +287,77 @@ describe('chapter 3-5-3 exercises', () => {
         throw new Error('listWeightFn need a List param.')
       return s.car * 3 + s.cdr.car * 3 + s.car * s.cdr.car * 5
     }
+  })
+
+  it('exec3.73', () => {
+    function rc(r, c, dt) {
+      return (i, v0) => stream_map(x => (1/c) * x + r * x, integral(i, v0, dt))
+    }
+  })
+
+  it('exec3.74 ~ 3.76', () => {
+    function sign_change_detector(next, current) {
+      if(current >= 0 && next < 0)
+        return -1
+      if(current < 0 && next >= 0)
+        return 1
+      return 0
+    }
+
+    const fiveCrossing = stream_map(x => x % 5 === 0 ? -x : x, integers)
+    const EXPECTED = [ 0,0,0,0,-1,1,0 ]
+
+    function make_zero_crossings_boss(input, initValue = 0) {
+      const output = pair(
+        sign_change_detector(car(input), initValue),
+        () => stream_map2_memo(sign_change_detector, stream_cdr(input), output)
+      )
+
+      return output
+    }
+
+    function make_zero_crossings_alyssa(input, lastValue = 0) {
+      return pair(
+        sign_change_detector(car(input), lastValue),
+        () => make_zero_crossings_alyssa(stream_cdr(input), car(input))
+      )
+    }
+
+    expectIteration(make_zero_crossings_boss(fiveCrossing), EXPECTED)
+    expectIteration(make_zero_crossings_alyssa(fiveCrossing), EXPECTED)
+
+    // function make_zero_crossings_louis(input_stream, last_value) {
+    //   const avpt = (car(input_stream) + last_value) / 2
+    //   console.log(`avpt: ${car(input_stream)}, ${last_value}, ${avpt}`)
+    //   return pair(
+    //     sign_change_detector(avpt, last_value),
+    //     () => make_zero_crossings_louis(stream_cdr(input_stream), avpt)
+    //   )
+    // }
+    function make_zero_crossings_louis(input_stream, last_value, last_avpt) {
+      const avpt = (car(input_stream) + last_value) / 2
+      // console.log(`avpt: ${car(input_stream)}, ${last_value}, ${avpt}`)
+      return pair(
+        sign_change_detector(avpt, last_avpt),
+        () => make_zero_crossings_louis(stream_cdr(input_stream), car(input_stream), avpt)
+      )
+    }
+
+    expectIteration(make_zero_crossings_louis(fiveCrossing, 0, 0), EXPECTED)
+
+    // exec3.76
+    function smooth(input) {
+      const output = pair(
+        car(input),
+        () => stream_map2_memo((x, y) => (x + y) / 2, stream_cdr(input), input)
+      )
+
+      return output
+    }
+
+    function make_zero_crossings_Eva(input_stream) {
+      return make_zero_crossings_alyssa(smooth(input_stream))
+    }
+    expectIteration(make_zero_crossings_Eva(fiveCrossing), EXPECTED)
   })
 })
