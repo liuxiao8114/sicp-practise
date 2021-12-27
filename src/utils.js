@@ -3,6 +3,11 @@ module.exports = {
   isPair,
   List,
   Queue,
+  car,
+  cdr,
+  pair,
+  list,
+  isNull,
 }
 
 function isPair(p) {
@@ -37,21 +42,36 @@ Cons.prototype = {
       throw new Error(`no cadr in pair: ${this.toString()}`)
     return this.cdr.cdr
   },
+  getCaadr() {
+    if(!isPair(this.cdr) || !isPair(this.cdr.car))
+      throw new Error(`no caadr in pair: ${this.toString()}`)
+    return this.cdr.car.car
+  },
   getCaddr() {
-
+    if(!isPair(this.cdr) || !isPair(this.cdr.cdr))
+      throw new Error(`no caddr in pair: ${this.toString()}`)
+    return this.cdr.cdr.car
+  },
+  getCdadr() {
+    if(!isPair(this.cdr) || !isPair(this.cdr.car))
+      throw new Error(`no caddr in pair: ${this.toString()}`)
+    return this.cdr.car.cdr
   },
   getCdddr() {
-
+    if(!isPair(this.cdr) || !isPair(this.cdr.cdr))
+      throw new Error(`no cdddr in pair: ${this.toString()}`)
+    return this.cdr.cdr.cdr
   },
   toString() {
     if(!this.car && !this.cdr)
       return "'()"
-    return `(${this.car}, ${this.cdr})`
+    return `(cons ${this.car} ${this.cdr})`
   },
 }
 
 Cons.prototype.valueOf = Cons.prototype.toString
 
+/*
 function List(...values) {
   // function recursivePairs(values, i) {
   //   // console.log(values[i])
@@ -72,9 +92,54 @@ function List(...values) {
   }
 }
 
+(1 2 3)
+(cons 1 (cons 2 (cons 3 null)))
+
+(1 (2 3))
+(cons 1 (cons (cons 2 (cons 3 null)) null))
+
+((1 2) 3)
+(cons (cons 1 (cons 2 null)) (cons 3 null))
+*/
+function List(...values) {
+  if(values.length === 0)
+    return null
+  else if(values.length === 1) {
+    return Cons.call(this, values[0], null)
+    // this.car = values[0]
+    // this.cdr = null
+  } else {
+    // return
+    this.car = values[0]
+    this.cdr = new List(...values.slice(1))
+  }
+}
+
 List.prototype = Object.create(Cons.prototype, {
   constructor: List,
 })
+
+function listToString(s, l) {
+  if(l == null)
+    return s
+  if(l.car == null && l.cdr == null)
+    return `${s}'())`
+  if(l.cdr == null)
+    return `${s}${l.car.toString()})`
+  if(l.cdr instanceof List)
+    return listToString(`${s}${l.car.toString()} `, l.cdr)
+  return listToString(`${s}${l.car.toString()} ${l.cdr.toString()} `)
+}
+List.prototype.toString = function() {
+  // if(this.car == null && this.cdr == null)
+  //   return "'()"
+  // if(this.cdr == null)
+  //   return this.car.toString() + ')'
+  // if(this.cdr instanceof List)
+  //   return this.car.toString() + ' ' + this.cdr.toString()
+  // return '(' + this.car.toString() + ' ' + this.cdr.toString()
+  return listToString('(', this)
+}
 
 List.prototype.reverse = function() {
   function iter(l, result = null) {
@@ -175,4 +240,28 @@ Queue.prototype = {
   isEmpty() {
     return this.length === 0
   },
+}
+
+function car(p) {
+  if(!isPair(p))
+    throw new Error(`car() needs a Cons instance param but got: ${p}, ${typeof p} instead.`)
+  return p.car
+}
+
+function cdr(p) {
+  if(!isPair(p))
+    throw new Error(`cdr() needs a Cons instance param but got: ${p}, ${typeof p} instead.`)
+  return p.cdr
+}
+
+function isNull(p) {
+  return p == null || (isPair(p) && car(p) == null)
+}
+
+function pair(a, b) {
+  return new Cons(a, b)
+}
+
+function list(...values) {
+  return new List(...values)
 }

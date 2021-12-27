@@ -11,14 +11,30 @@ describe('util test cases', () => {
       expect(Object.getPrototypeOf(l)).toBe(List.prototype)
       expect(l.getCar()).toBe(1)
       expect(l.getCadr()).toBe(2)
-      expect(l.toString()).toEqual(`(1, (2, (3, (4, null))))`)
-      expect(l.reverse().toString()).toEqual(`(4, (3, (2, (1, null))))`)
+      // expect(l.toString()).toEqual(`(1, (2, (3, (4, null))))`)
+      // expect(l.reverse().toString()).toEqual(`(4, (3, (2, (1, null))))`)
+      expect(l.toString()).toEqual(`(1 2 3 4)`)
+      // expect(l.reverse().toString()).toEqual(`(list 4 3 2 1)`)
     })
 
-    it('constructs list using other lists', () => {
+    it('mixes list with cons', () => {
       const sub1 = new List(2, 3)
       const test1 = new Cons(1, sub1)
-      expect(test1.toString()).toEqual(`(1, (2, (3, null)))`)
+      // expect(test1.toString()).toEqual(`(1, (2, (3, null)))`)
+      expect(test1.toString()).toEqual(`(cons 1 (2 3))`)
+    })
+
+    it('constructs recursive list', () => {
+      const l1 = new List(1, new List(2, 3))
+      const L1 = `(1 (2 3))`
+      expect(l1.toString()).toBe(L1)
+
+      const l2 = new List(new List(1, 2), 3)
+      const L2 = `((1 2) 3)`
+      expect(l2.toString()).toBe(L2)
+
+      const l3 = new List(l1, l2)
+      expect(l3.toString()).toBe(`(${L1} ${L2})`)
     })
   })
 

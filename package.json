@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "jest": {
-    "rootDir": "test/chapter4"
+    "rootDir": "test/"
   },
   "scripts": {
     "test": "jest"
