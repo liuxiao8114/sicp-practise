@@ -1,10 +1,13 @@
 // 4.1.1 The core of the evaluator
-// some parts are implemented in the fellow
+// some parts are implemented in the fellow section
+const { car, cdr, map } = require('./utils')
+
 const {
+  SYMBOL, IF, SEQUENCE, ASSIGNMENT, LAMBDA, BLOCK,
   isVariable,
   isSelfEvaluating,
-  isQuoted, getTextQuotation,
-  isDefinition,
+  isTaggedList, isQuoted, getTextQuotation, getTag,
+  isDefinition, getDefinitionVariable, getDefinitionValue,
   isAssignment, assignmentVariable, assignmentValue,
   isIf, getIfPredicate, getIfConsequent, getIfAlternative,
   isBegin, beginActions, getFirstExp, getRestExps, isLastExp,
@@ -13,6 +16,8 @@ const {
 } = require('./4-1-2.js')
 
 const {
+  // Test of predicates
+  isTruthy, isFalsy,
   // Representing procedures
   isPrimitiveProcedure, applyPrimitiveProcedure,
   createProcedure, isCompondProcedure, getProcedureParameters, getProcedureBody, getProcedureEnvironment,
@@ -20,6 +25,24 @@ const {
   lookupVariableValue, extendEnvironment, $defineVariable, $setVariableValue,
 } = require('./4-1-3.js')
 
+/*
+  Each type of component has a syntax predicate that tests for it
+  and an abstract means for selecting its parts.
+  1. Primitive expression
+    1-1. Number, String, Boolean, Null
+    1-2. Variable
+  2. Combination
+    2-1. function application
+    2-2. operator combination => function application
+  3. Syntactic form
+    3-1. condition
+    3-2. lambda
+    3-3. sequence => about the evaluate order
+    3-4. block => about the environment
+    3-5. return
+    3-6. function declaration
+    3-7. constant or variable declaration or assignment
+*/
 function sicpEval(exp, env) {
   if(isSelfEvaluating(exp))
     return exp
@@ -44,7 +67,7 @@ function sicpEval(exp, env) {
   else if(isApplication(exp)) {
     return sicpApply(
       sicpEval(getOperator(exp), env),
-      listofValues(getOperands(exp), env)
+      listOfValues(getOperands(exp), env)
     )
   }
 }
@@ -65,36 +88,101 @@ function sicpApply(procedure, args) {
   throw new Error(`Unknown procedure type -- Apply: ${procedure}`)
 }
 
-// Procedure arguments
-function listofValues(exps, env) {
+function sicpJsEval() {
+  const _table = new Map() // eslint-disable-line
 
+  _table.set(SYMBOL, (exp, env) => lookupVariableValue(exp, env))
+  _table.set(IF, evalIf)
+  _table.set(SEQUENCE, evalSequence)
+  _table.set(ASSIGNMENT, evalAssignment)
+  _table.set(LAMBDA, (exp, env) => createProcedure(getLambdaParameters(exp), getLambdaBody(exp), env))
+  _table.set(BLOCK, (exp, env) => {
+
+  })
+
+  // _table.set(isVariable, (exp, env) => lookupVariableValue(exp, env))
+  // _table.set(isIf, evalIf)
+  // _table.set(isBegin, (exp, env) => evalSequence())
+  // _table.set(isAssignment, evalAssignment)
+  // _table.set(isLambda, (exp, env) => createProcedure(getLambdaParameters(exp), getLambdaBody(exp), env))
+
+  function dispatch(component, env) {
+    if(isTaggedList(component))
+      return _table.get(car(component))(component, env)
+    return component
+  }
+
+  return dispatch
+}
+
+const _table = new Map() // eslint-disable-line
+_table.set(SYMBOL, )
+
+function unparse(taggedList) {
+  if(!isTaggedList(taggedList))
+    throw new Error('not taggedList: ' + taggedList)
+
+  _table.get(getTag(taggedList))
+
+}
+
+function sicpJsApply() {
+  const _table = new Map() // eslint-disable-line
+
+  function dispatch(component, env) {
+    if(isTaggedList(component))
+      return _table.get(car(component))(component, env)
+    return component
+  }
+
+  return dispatch
+}
+
+const evaluate = sicpJsEval()
+const apply = sicpJsApply()
+
+// Procedure arguments
+function listOfValues(exps, env) {
+  return map(arg => evaluate(arg, env), exps)
 }
 
 // Conditionals
 function evalIf(exp, env) {
-  return sicpEval(getIfPredicate(exp), env) ?
-    sicpEval(getIfConsequent(exp), env)
-    : sicpEval(getIfAlternative(exp), env)
+  return isTruthy(evaluate(getIfPredicate(exp), env)) ?
+    evaluate(getIfConsequent(exp), env) :
+    evaluate(getIfAlternative(exp), env)
 }
 
 // Sequences
 function evalSequence(exps, env) {
-  sicpEval(getFirstExp(exps), env)
+  let result = evaluate(getFirstExp(exps), env)
 
-  if(!isLastExp(exps)) {
-    return evalSequence(getRestExps(exps), env)
-  }
+  if(!isLastExp(exps))
+    result = evalSequence(getRestExps(exps), env)
+
+  return result
 }
 
 // Assignments and definitions
 function evalAssignment(exp, env) {
   $setVariableValue(
     assignmentVariable(exp),
-    sicpEval(assignmentValue(exp), env),
+    evaluate(assignmentValue(exp), env),
     env
   )
 }
 
 function evalDefinition(exp, env) {
+  $defineVariable(
+    getDefinitionVariable(exp),
+    evaluate(getDefinitionValue(exp), env),
+    env
+  )
+}
 
+module.exports = {
+  sicpEval,
+  sicpApply,
+  evaluate,
+  apply,
 }

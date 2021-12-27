@@ -1,15 +1,14 @@
 // 4.1.3 Evaluator Data Structions
 const { Cons, List, isPair } = require('./utils')
 
-module.exports = {
-  ...frame,
-  extendEnvironment,
-  lookupVariableValue,
-  $setVariableValue,
-  $defineVariable,
+// Test of predicates
+function isTruthy(x) {
+  return !!x
 }
 
-// Test of predicates
+function isFalsy(x) {
+  return !x
+}
 
 // Representing procedures
 function applyPrimitiveProcedure() {
@@ -58,4 +57,14 @@ function $setVariableValue(variable, value, env) {
 
 function $defineVariable() {
 
+}
+
+module.exports = {
+  ...frame,
+  isTruthy,
+  isFalsy,
+  extendEnvironment,
+  lookupVariableValue,
+  $setVariableValue,
+  $defineVariable,
 }
