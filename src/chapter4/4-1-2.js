@@ -29,7 +29,7 @@ const base = {
     if(Array.isArray(tag))
       return tag.includes(exp.getCar())
     if(tag == null)
-      return TAGS[exp.getCar()] == null
+      return Object.values(TAGS).includes(exp.getCar())
 
     throw new Error(`Unknown type for exp: ${exp}, tag: ${tag}.`)
   },
@@ -68,11 +68,11 @@ const assignment = {
 
 // If
 const sicpIf = {
-  makeIf: (predicate, consequent, alternative) => new List(IF, predicate, consequent, alternative),
+  makeIf: (predicate, consequent, alternative = null) => new List(IF, predicate, consequent, alternative),
   isIf: exp => base.isTaggedList(exp, IF),
   getIfPredicate: exp => exp.getCadr(),
-  getIfConsequent: exp => exp.getCddr().getCar(),
-  getIfAlternative: exp => exp.getCddr().getCdr(),
+  getIfConsequent: exp => exp.getCaddr(),
+  getIfAlternative: exp => isPair(exp.getCdddr()) ? exp.getCdddr().getCar() : false,
 }
 
 // Sequences
@@ -112,7 +112,7 @@ const lambda = {
     return exp.getCadr()
   },
   getLambdaBody(exp) {
-    return exp.getCadr()
+    return exp.getCaddr()
   },
 }
 
@@ -200,6 +200,11 @@ const jsSpec = {
     getJSSecondOperand(component) {
       return component.getCaddr()
     },
+  },
+
+  // Sequences
+  ...{
+    isEmptySequence: seq => isNull(seq)
   },
 
   // Blocks

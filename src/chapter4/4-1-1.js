@@ -10,7 +10,7 @@ const {
   isDefinition, getDefinitionVariable, getDefinitionValue,
   isAssignment, assignmentVariable, assignmentValue,
   isIf, getIfPredicate, getIfConsequent, getIfAlternative,
-  isBegin, beginActions, getFirstExp, getRestExps, isLastExp,
+  isBegin, beginActions, getFirstExp, getRestExps, isLastExp, isEmptySequence,
   isLambda, getLambdaParameters, getLambdaBody,
   isApplication, getOperator, getOperands,
 } = require('./4-1-2.js')
@@ -20,8 +20,10 @@ const {
   isTruthy, isFalsy,
   // Representing procedures
   isPrimitiveProcedure, applyPrimitiveProcedure,
-  createProcedure, isCompondProcedure, getProcedureParameters, getProcedureBody, getProcedureEnvironment,
-  // Operations on Evnvironments
+  makeProcedure, isCompondProcedure, getProcedureParameters, getProcedureBody, getProcedureEnvironment,
+  // Representing return values
+  isReturnValue, returnValueContent,
+  // Operations on Environments
   lookupVariableValue, extendEnvironment, $defineVariable, $setVariableValue,
 } = require('./4-1-3.js')
 
@@ -57,7 +59,7 @@ function sicpEval(exp, env) {
   else if(isIf(exp))
     return evalIf(exp, env)
   else if(isLambda(exp))
-    return createProcedure(
+    return makeProcedure(
       getLambdaParameters(exp),
       getLambdaBody(exp),
       env
@@ -93,9 +95,9 @@ function sicpJsEval() {
 
   _table.set(SYMBOL, (exp, env) => lookupVariableValue(exp, env))
   _table.set(IF, evalIf)
-  _table.set(SEQUENCE, evalSequence)
+  _table.set(SEQUENCE, (exp, env) => evalSequence(beginActions(exp), env))
   _table.set(ASSIGNMENT, evalAssignment)
-  _table.set(LAMBDA, (exp, env) => createProcedure(getLambdaParameters(exp), getLambdaBody(exp), env))
+  _table.set(LAMBDA, (exp, env) => makeProcedure(getLambdaParameters(exp), getLambdaBody(exp), env))
   _table.set(BLOCK, (exp, env) => {
 
   })
@@ -104,42 +106,43 @@ function sicpJsEval() {
   // _table.set(isIf, evalIf)
   // _table.set(isBegin, (exp, env) => evalSequence())
   // _table.set(isAssignment, evalAssignment)
-  // _table.set(isLambda, (exp, env) => createProcedure(getLambdaParameters(exp), getLambdaBody(exp), env))
+  // _table.set(isLambda, (exp, env) => makeProcedure(getLambdaParameters(exp), getLambdaBody(exp), env))
 
   function dispatch(component, env) {
-    if(isTaggedList(component))
-      return _table.get(car(component))(component, env)
-    return component
+    if(isSelfEvaluating(component))
+      return component
+
+    const _eval = _table.get(car(component))
+    if(typeof _eval === 'function')
+      return _eval(component, env)
+
+    throw new Error(`Unknown component for evaluate: ${component}`)
   }
 
   return dispatch
 }
 
-const _table = new Map() // eslint-disable-line
-_table.set(SYMBOL, )
+function sicpJsApply(fn, args) {
+  if(isPrimitiveProcedure(fn))
+    return applyPrimitiveProcedure(fn, args)
+  if(isCompondProcedure(fn)) {
+    const result = evalSequence(
+      getProcedureBody(fn),
+      extendEnvironment(
+        getProcedureParameters(fn),
+        args,
+        getProcedureEnvironment(fn)
+      )
+    )
 
-function unparse(taggedList) {
-  if(!isTaggedList(taggedList))
-    throw new Error('not taggedList: ' + taggedList)
-
-  _table.get(getTag(taggedList))
-
-}
-
-function sicpJsApply() {
-  const _table = new Map() // eslint-disable-line
-
-  function dispatch(component, env) {
-    if(isTaggedList(component))
-      return _table.get(car(component))(component, env)
-    return component
+    return isReturnValue(result) ? returnValueContent(result) : undefined
   }
 
-  return dispatch
+  throw new Error(`Unknown procedure type -- Apply: ${fn}`)
 }
 
 const evaluate = sicpJsEval()
-const apply = sicpJsApply()
+const apply = sicpJsApply
 
 // Procedure arguments
 function listOfValues(exps, env) {
@@ -155,12 +158,14 @@ function evalIf(exp, env) {
 
 // Sequences
 function evalSequence(exps, env) {
+  if(isEmptySequence(exps))
+    return undefined
+
   let result = evaluate(getFirstExp(exps), env)
+  if(isLastExp(exps) || isReturnValue(result))
+    return result
 
-  if(!isLastExp(exps))
-    result = evalSequence(getRestExps(exps), env)
-
-  return result
+  return evalSequence(getRestExps(exps), env)
 }
 
 // Assignments and definitions
@@ -180,9 +185,74 @@ function evalDefinition(exp, env) {
   )
 }
 
+const _table = new Map() // eslint-disable-line
+// (symbol x) => x
+_table.set(SYMBOL, exp => exp.getCadr())
+_table.set(IF, exp => {
+  let res = IF + '('
+
+  res += unparse(getIfPredicate(exp))
+  res += ') { '
+  res += unparse(getIfConsequent(exp))
+  res += ' } '
+
+  if(getIfAlternative(exp)) {
+    res += 'else { '
+    res += unparse(getIfAlternative(exp))
+    res += ' } '
+  }
+
+  return res
+})
+
+_table.set(SEQUENCE, exp => {
+  let result = ''
+  if(!isBegin(exp))
+    throw new Error(`Unparse sequence ended with unSeq: ${exp}`)
+
+  const seq = beginActions(exp)
+
+  if(isEmptySequence(seq))
+    return result
+
+  result += unparse(getFirstExp(seq)) + '; '
+  result += unparse(getRestExps(seq))
+
+  return result
+})
+
+_table.set(ASSIGNMENT, exp => {
+
+})
+
+_table.set(LAMBDA, (exp, env) => makeProcedure(getLambdaParameters(exp), getLambdaBody(exp), env))
+_table.set(BLOCK, (exp, env) => {})
+
+function unparse(taggedList) {
+  if(!isTaggedList(taggedList)) {
+    if(isSelfEvaluating(taggedList)) {
+      if(typeof taggedList === 'string')
+        return `"${taggedList}"`
+      return taggedList
+    }
+
+    throw new Error('not taggedList: ' + taggedList)
+  }
+  
+  const tag = getTag(taggedList)
+  const handler = _table.get(tag)
+
+  if(typeof handler !== 'function')
+    throw new Error(`cannot get unparse handler for tag: ${tag}`)
+
+  return handler(taggedList)
+}
+
+
 module.exports = {
   sicpEval,
   sicpApply,
   evaluate,
   apply,
+  unparse,
 }

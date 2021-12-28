@@ -2,46 +2,74 @@ const path = require('path')
 
 const SRC_ROOT = `../../src/chapter4/`
 const { car, cdr, pair, isNull, list, map } = require(path.join(SRC_ROOT, 'utils'))
-const { evaluate } = require(path.join(SRC_ROOT, '4-1-1'))
+const { evaluate, unparse, } = require(path.join(SRC_ROOT, '4-1-1'))
 const {
   isTaggedList,
   sicpIf,
   operatorCombinationToApplication,
-  makeName,
-  makeAssignment,
+  variable,
+  assignment,
+  begin,
+  TAGS,
 } = require(path.join(SRC_ROOT, '4-1-2'))
 
+const TRUE = "yes"
+const FALSE = "no"
+
 describe('chapter 4.1.2', () => {
-  const TRUE = "yes"
-  const FALSE = "no"
-
-  it('tests evaluate: if', () => {
+  it('composite if', () => {
     const { makeIf, isIf, getIfPredicate } = sicpIf
-    const literalPredicate = 1
+    const literalTruePredicate = 1
+    const literalFalsePredicate = 0
     // const statePredicate = list()
-    const TEST_IF_1 = makeIf(literalPredicate, TRUE, FALSE)
+    const TEST_IF_SIMPLE_TRUE = makeIf(literalTruePredicate, TRUE, FALSE)
+    const TEST_IF_SIMPLE_FALSE = makeIf(literalFalsePredicate, TRUE, FALSE)
+    console.log(TEST_IF_SIMPLE_TRUE.toString())
+    console.log(TEST_IF_SIMPLE_FALSE.toString())
 
-    expect(isIf(TEST_IF_1)).toBe(true)
-    expect(getIfPredicate(TEST_IF_1)).toBe(literalPredicate)
-    expect(evaluate(TEST_IF_1)).toBe(TRUE)
+    expect(isIf(TEST_IF_SIMPLE_TRUE)).toBe(true)
+    expect(getIfPredicate(TEST_IF_SIMPLE_TRUE)).toBe(literalTruePredicate)
+    expect(evaluate(TEST_IF_SIMPLE_TRUE)).toBe(TRUE)
+    expect(evaluate(TEST_IF_SIMPLE_FALSE)).toBe(FALSE)
   })
 
-  it('tests operatorCombinationToApplication', () => {
+  it('composite assignment', () => {
+    const { makeAssignment, isAssignment, assignmentVariable, assignmentValue } = assignment
+    const x = variable.makeName('x')
+    const xTo1 = makeAssignment(x, 1)
+    const xToY = makeAssignment(x, 'y')
+    const xToFn = makeAssignment(x, () => console.log(`assign x to function`))
+
+  })
+
+  it('sequence/begin', () => {
+    const { makeBegin, isBegin, beginActions, getFirstExp, getRestExps, isLastExp } = begin
+    const exp = makeBegin(list(1, 2, "1", "2"))
+
+    expect(isBegin(exp)).toBe(true)
+    expect(isBegin(list(''))).toBe(false)
+
+    const seq = beginActions(exp)
+
+    expect(getFirstExp(seq)).toBe(1)
+
+
+  })
+
+  it('operatorCombinationToApplication', () => {
     // const TEST_STRING_1 = 'x = 1'
     // const TEST_STRING_2 = 'y + 5'
     // const TEST_STRING_3 = 'true === false'
 
     const ONE = 1
-    const x = makeName('x')
-    const xTo1 = makeAssignment(x, ONE)
+    const x = variable.makeName('x')
+    const xTo1 = assignment.makeAssignment(x, ONE)
 
     const TEST_LIST_1 = list('===', xTo1, ONE)
-    console.log(operatorCombinationToApplication(TEST_LIST_1).toString())
+    // console.log(operatorCombinationToApplication(TEST_LIST_1).toString())
   })
 })
-// ftp 10.200.102.52
-// 'flcnp2test-mix mixcnp22006'
-// /home/flcnp2fpa/MIX2CN
+
 describe('4.1.2 exercises', () => {
   /*
     (20([0-9]{2})(01|0[3-9]|1[0-2])01_20\2\3(3[01]))|(20(?<year2>[0-9]{2})0201_20<year2>022[8-9])
@@ -71,22 +99,37 @@ describe('4.1.2 exercises', () => {
     Adding such whitespace characters to (or removing them from) a program text in order
     to make the text easier to read is called pretty-printing.
   */
-  it('exec4.2', () => {
+  describe('exec4.2', () => {
+    const TEST_IF_STRING = 'if(1) { "yes" } else { "no" } '
 
-    // parse("const size = 2; 5 * size;")
-    // list(
-    //   "sequence",
-    //   list(
-    //     list(
-    //       "constant_declaration",
-    //       list("name", "size"),
-    //       list("literal", 2)
-    //     ),
-    //     list("binary_operator_combination", "*", list("literal", 5), list("name", "size"))
-    //   )
-    // ).toString()
+    it('unparse if', () => {
+      expect(TAGS.SYMBOL).toBe('symbol')
+      // const { makeIf } = sicpIf
+      // const TEST_IF_SIMPLE_TRUE = makeIf(1, TRUE, FALSE)
+      //
+      // expect(unparse(TEST_IF_SIMPLE_TRUE)).toBe(TEST_IF_STRING)
+    })
 
-    // console.log(new Map()) // eslint-disable-line
+    it('unparse sequence', () => {
+      // const { makeBegin } = begin
+      // const seq = makeBegin(list(1, 2, "1", "2"))
+      //
+      // console.log(unparse(seq))
+      // parse("const size = 2; 5 * s  ize;")
+      // list(
+      //   "sequence",
+      //   list(
+      //     list(
+      //       "constant_declaration",
+      //       list("name", "size"),
+      //       list("literal", 2)
+      //     ),
+      //     list("binary_operator_combination", "*", list("literal", 5), list("name", "size"))
+      //   )
+      // ).toString()
+
+      // console.log(new Map()) // eslint-disable-line
+    })
   })
 })
 
