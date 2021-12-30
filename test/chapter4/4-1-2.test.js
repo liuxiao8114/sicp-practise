@@ -1,7 +1,7 @@
 const path = require('path')
 
 const SRC_ROOT = `../../src/chapter4/`
-const { car, cdr, pair, isNull, list, map } = require(path.join(SRC_ROOT, 'utils'))
+const { Cons, car, cdr, pair, isNull, list, map } = require(path.join(SRC_ROOT, 'utils'))
 const { evaluate, unparse, } = require(path.join(SRC_ROOT, '4-1-1'))
 const {
   isTaggedList,
@@ -10,6 +10,7 @@ const {
   variable,
   assignment,
   begin,
+  jsSpec,
   TAGS,
 } = require(path.join(SRC_ROOT, '4-1-2'))
 
@@ -24,8 +25,6 @@ describe('chapter 4.1.2', () => {
     // const statePredicate = list()
     const TEST_IF_SIMPLE_TRUE = makeIf(literalTruePredicate, TRUE, FALSE)
     const TEST_IF_SIMPLE_FALSE = makeIf(literalFalsePredicate, TRUE, FALSE)
-    console.log(TEST_IF_SIMPLE_TRUE.toString())
-    console.log(TEST_IF_SIMPLE_FALSE.toString())
 
     expect(isIf(TEST_IF_SIMPLE_TRUE)).toBe(true)
     expect(getIfPredicate(TEST_IF_SIMPLE_TRUE)).toBe(literalTruePredicate)
@@ -40,20 +39,30 @@ describe('chapter 4.1.2', () => {
     const xToY = makeAssignment(x, 'y')
     const xToFn = makeAssignment(x, () => console.log(`assign x to function`))
 
+    expect(assignmentVariable(xTo1)).toBe(x)
+    expect(assignmentVariable(xToY)).toBe(x)
+    expect(assignmentVariable(xToFn)).toBe(x)
+
+    expect(assignmentValue(xTo1)).toBe(1)
+    expect(assignmentValue(xToY)).toBe('y')
   })
 
   it('sequence/begin', () => {
     const { makeBegin, isBegin, beginActions, getFirstExp, getRestExps, isLastExp } = begin
-    const exp = makeBegin(list(1, 2, "1", "2"))
+    const TEST_LIST = [ 1, 2 , "3", "4" ]
+    const exp = makeBegin(list(...TEST_LIST))
+    let i = 0
 
     expect(isBegin(exp)).toBe(true)
     expect(isBegin(list(''))).toBe(false)
 
-    const seq = beginActions(exp)
+    let seq = beginActions(exp)
+    // console.log(`seq: ${seq.toString()}`)
 
-    expect(getFirstExp(seq)).toBe(1)
-
-
+    while(!isLastExp(seq)) {
+      expect(getFirstExp(seq)).toBe(TEST_LIST[i++])
+      seq = getRestExps(seq)
+    }
   })
 
   it('operatorCombinationToApplication', () => {
@@ -66,7 +75,7 @@ describe('chapter 4.1.2', () => {
     const xTo1 = assignment.makeAssignment(x, ONE)
 
     const TEST_LIST_1 = list('===', xTo1, ONE)
-    // console.log(operatorCombinationToApplication(TEST_LIST_1).toString())
+    operatorCombinationToApplication(TEST_LIST_1)
   })
 })
 
@@ -103,57 +112,111 @@ describe('4.1.2 exercises', () => {
     const TEST_IF_STRING = 'if(1) { "yes" } else { "no" } '
 
     it('unparse if', () => {
-      expect(TAGS.SYMBOL).toBe('symbol')
-      // const { makeIf } = sicpIf
-      // const TEST_IF_SIMPLE_TRUE = makeIf(1, TRUE, FALSE)
-      //
-      // expect(unparse(TEST_IF_SIMPLE_TRUE)).toBe(TEST_IF_STRING)
+      const { makeIf } = sicpIf
+      const TEST_IF_SIMPLE_TRUE = makeIf(1, TRUE, FALSE)
+
+      expect(unparse(TEST_IF_SIMPLE_TRUE)).toBe(TEST_IF_STRING)
     })
 
     it('unparse sequence', () => {
-      // const { makeBegin } = begin
-      // const seq = makeBegin(list(1, 2, "1", "2"))
-      //
-      // console.log(unparse(seq))
-      // parse("const size = 2; 5 * s  ize;")
-      // list(
-      //   "sequence",
-      //   list(
-      //     list(
-      //       "constant_declaration",
-      //       list("name", "size"),
-      //       list("literal", 2)
-      //     ),
-      //     list("binary_operator_combination", "*", list("literal", 5), list("name", "size"))
-      //   )
-      // ).toString()
+      const { makeBegin } = begin
+      const exp = makeBegin(list(1, 2, "1", "2"))
 
-      // console.log(new Map()) // eslint-disable-line
+      console.log(unparse(exp))
     })
+
+    it('unparse composited sample', () => {
+      const { makeBegin } = begin
+      const { makeLiteral, makeConstantDeclaration } = jsSpec
+
+      const VAR_X = 'size'
+      const exp = makeBegin(
+        list(
+          makeConstantDeclaration(VAR_X, makeLiteral(2)),
+          operatorCombinationToApplication(
+            list(
+              '*',
+              makeLiteral(5),
+              operatorCombinationToApplication(list('+', VAR_X, 1))
+            )
+          )
+        )
+      )
+
+      console.log(unparse(exp))
+
+      /*
+        parse("const size = 2; 5 * size;")
+        list(
+          "sequence",
+          list(
+            list(
+              "constant_declaration",
+              list("name", "size"),
+              list("literal", 2)
+            ),
+            list("binary_operator_combination", "*", list("literal", 5), list("name", "size"))
+          )
+        ).toString()
+
+        parse("const size = 2; 5 * (size + 1);")
+        list(
+          "sequence",
+          list(
+            list(
+              "constant_declaration",
+              list("name", "size"),
+              list("literal", 2)
+            ),
+            list(
+              "binary_operator_combination",
+              "*",
+              list("literal", 5),
+              list(
+                "binary_operator_combination",
+                "+",
+                list("name", "size"),
+                list("literal", 2)
+              )
+            )
+          )
+        )
+      */
+    })
+  })
+
+  /*
+    Exercise 4.3
+    Rewrite evaluate so that the dispatch is done in data-directed style. Compare this with
+    the data-directed differentiation function of exercise 2.73.
+  */
+  it('exec4.3', () => {
+
+  })
+
+  /*
+    Exercise 4.4
+    Recall from section 1.1.6 that the logical composition operations && and || are syntactic
+    sugar for conditional expressions: The logical conjunction expression1 && expression2
+    is syntactic sugar for expression1 ? expression2 : false, and the logical disjunction
+    expression1 || expression2 is syntactic sugar for expression1 ? true : expression2. They
+    are parsed as follows:
+    << expression1 logical-operation expression2 >> =
+      list(
+        "logical_composition",
+        "logical-operation",
+        list(<< expression1 >>, << expression2 >>)
+      )
+    where logical-operation is && or ||. Install && and || as new syntactic forms for the
+    evaluator by declaring appropriate syntax functions and evaluation functions eval_and
+    and eval_or. Alternatively, show how to implement && and || as derived components.
+  */
+  it('exec4.4', () => {
+
   })
 })
 
 /*
-  Exercise 4.3
-  Rewrite evaluate so that the dispatch is done in data-directed style. Compare this with
-  the data-directed differentiation function of exercise 2.73.
-
-  Exercise 4.4
-  Recall from section 1.1.6 that the logical composition operations && and || are syntactic
-  sugar for conditional expressions: The logical conjunction expression1 && expression2
-  is syntactic sugar for expression1 ? expression2 : false, and the logical disjunction
-  expression1 || expression2 is syntactic sugar for expression1 ? true : expression2. They
-  are parsed as follows:
-  << expression1 logical-operation expression2 >> =
-    list(
-      "logical_composition",
-      "logical-operation",
-      list(<< expression1 >>, << expression2 >>)
-    )
-  where logical-operation is && or ||. Install && and || as new syntactic forms for the
-  evaluator by declaring appropriate syntax functions and evaluation functions eval_and
-  and eval_or. Alternatively, show how to implement && and || as derived components.
-
   Exercise 4.5
   a. In JavaScript, lambda expressions must not have duplicate parameters. The evaluator
   in section 4.1.1 does not check for this.

@@ -1,5 +1,5 @@
 // 4.1.2 Representing Expressions/Components
-const { List, isPair, isNull } = require('./utils')
+const { Cons, List, isPair, isNull } = require('./utils')
 // const { evaluate, apply } = require('./4-1-1')
 
 const SYMBOL = 'symbol'
@@ -10,7 +10,7 @@ const LAMBDA = 'lambda'
 const COND = 'cond'
 const DEFINE = 'define'
 
-const TAGS = { SYMBOL, IF, SEQUENCE, ASSIGNMENT, LAMBDA, COND }
+let TAGS = null
 
 /*
   Literal expression: list('literal', value)
@@ -78,7 +78,7 @@ const sicpIf = {
 // Sequences
 const begin = {
   makeBegin(seq) {
-    return new List(SEQUENCE, seq)
+    return new Cons(SEQUENCE, seq)
   },
   isBegin(exp) {
     return base.isTaggedList(exp, SEQUENCE)
@@ -101,6 +101,7 @@ const begin = {
 }
 
 // Lambda
+// js-spec
 const lambda = {
   makeLambda(parameters, body) {
     return new List(LAMBDA, parameters, body)
@@ -112,7 +113,7 @@ const lambda = {
     return exp.getCadr()
   },
   getLambdaBody(exp) {
-    return exp.getCaddr()
+    return exp.getCddr()
   },
 }
 
@@ -135,16 +136,20 @@ const definition = {
   },
 }
 
-// Application
+/*
+  Application
+  As js-spec Function applications needs an explict constructor described later,
+  they should have different treatments in some methods like isApplication(), getOperator() and getOperands().
+*/
 const application = {
   isApplication(exp) {
-    return isPair(exp)
+    return base.isTaggedList(exp, APPLICATION) || (!base.isTaggedList(exp) && isPair(exp))
   },
   getOperator(exp) {
-    return exp.getCar()
+    return base.isTaggedList(exp, APPLICATION) ? exp.getCadr() : exp.getCar()
   },
   getOperands(exp) {
-    return exp.getCdr()
+    return base.isTaggedList(exp, APPLICATION) ? exp.getCddr() : exp.getCdr()
   },
   getFirstOperand(operands) {
     return operands.getCar()
@@ -164,15 +169,13 @@ const LITERAL = 'literal'
 const APPLICATION = 'application'
 const DECLARATION = 'declaration'
 const FUNCTION_DECLARATION = 'function'
-const VARIABLE_DECLARATION = 'variable'
-const CONSTANT_DECLARATION = 'constant'
+const VARIABLE_DECLARATION = 'var'
+const CONSTANT_DECLARATION = 'const'
 
 const BLOCK = 'block'
 const RETURN = 'return'
 
-TAGS[BLOCK] = BLOCK
-TAGS[RETURN] = RETURN
-TAGS[DECLARATION] = DECLARATION
+const JS_TAGS = { LITERAL, BLOCK, RETURN, APPLICATION, FUNCTION_DECLARATION, VARIABLE_DECLARATION, CONSTANT_DECLARATION,  }
 
 const BINARY_OPERATORS = /[+\-*/]|={1,3}/
 const UNARY_OPERATORS = /!~/
@@ -180,6 +183,7 @@ const UNARY_OPERATORS = /!~/
 const jsSpec = {
   // Literal
   ...{
+    makeLiteral: component => new List(LITERAL, component),
     isLiteral: component => base.isTaggedList(component, LITERAL) || base.isSelfEvaluating(component),
     literalValue: component => base.isTaggedList(component, LITERAL) ? component.getCadr() : component,
   },
@@ -221,16 +225,17 @@ const jsSpec = {
 
   // Constant, variable, and function declarations
   ...{
-    declarationSymbol: component => component.getCadr(),
-    declarationValueExpression: component => component.getCddr(),
     makeConstantDeclaration: (name, valueExpression) => new List(CONSTANT_DECLARATION, name, valueExpression),
+    declarationSymbol: component => component.getCadr(),
+    declarationValueExpression: component => component.getCaddr(),
 
     // FUNCTION <NAME>(...PARAMETERS) (BODY)
     isFnDeclaration: component => base.isTaggedList(component, FUNCTION_DECLARATION),
     fnDeclName: component => jsSpec.declarationSymbol(component),
     fnDeclParameters: component => component.getCaddr(),
-    fnDeclBody: component => component.getCdddr(),
+    fnDeclBody: component => component.getCadddr(),
 
+    // TODO:
     fnDeclToConstantDecl(component) {
       return jsSpec.makeConstantDeclaration(
         jsSpec.fnDeclName(component),
@@ -324,6 +329,11 @@ list(
   )
 )
 
+TAGS = {
+  SYMBOL, IF, SEQUENCE, ASSIGNMENT, LAMBDA, COND,
+  ...JS_TAGS
+}
+
 module.exports = {
   ...TAGS, TAGS,
   ...base, base,
@@ -335,5 +345,7 @@ module.exports = {
   ...definition,
   ...application,
   ...jsSpec, jsSpec,
+  isUnaryOperatorCombination,
+  isBinaryOperatorCombination,
   operatorCombinationToApplication,
 }

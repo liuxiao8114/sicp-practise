@@ -4,15 +4,18 @@ const { car, cdr, map } = require('./utils')
 
 const {
   SYMBOL, IF, SEQUENCE, ASSIGNMENT, LAMBDA, BLOCK,
+  LITERAL, CONSTANT_DECLARATION, APPLICATION,
   isVariable,
   isSelfEvaluating,
   isTaggedList, isQuoted, getTextQuotation, getTag,
   isDefinition, getDefinitionVariable, getDefinitionValue,
   isAssignment, assignmentVariable, assignmentValue,
   isIf, getIfPredicate, getIfConsequent, getIfAlternative,
-  isBegin, beginActions, getFirstExp, getRestExps, isLastExp, isEmptySequence,
+  makeBegin, isBegin, beginActions, getFirstExp, getRestExps, isLastExp, isEmptySequence,
   isLambda, getLambdaParameters, getLambdaBody,
   isApplication, getOperator, getOperands,
+  getJSFirstOperand, getJSSecondOperand,
+  declarationSymbol, declarationValueExpression,
 } = require('./4-1-2.js')
 
 const {
@@ -186,8 +189,15 @@ function evalDefinition(exp, env) {
 }
 
 const _table = new Map() // eslint-disable-line
-// (symbol x) => x
+const END_OF_STATE = '; '
+
+_table.set(LITERAL, exp => {
+  const result = exp.getCadr()
+  return typeof result === 'string' ? `"${result}"` : result
+})
+
 _table.set(SYMBOL, exp => exp.getCadr())
+
 _table.set(IF, exp => {
   let res = IF + '('
 
@@ -215,8 +225,8 @@ _table.set(SEQUENCE, exp => {
   if(isEmptySequence(seq))
     return result
 
-  result += unparse(getFirstExp(seq)) + '; '
-  result += unparse(getRestExps(seq))
+  result += unparse(getFirstExp(seq)) + END_OF_STATE
+  result += unparse(makeBegin(getRestExps(seq)))
 
   return result
 })
@@ -225,8 +235,37 @@ _table.set(ASSIGNMENT, exp => {
 
 })
 
+_table.set(CONSTANT_DECLARATION, exp => {
+  let result = CONSTANT_DECLARATION + ' '
+
+  result += unparse(declarationSymbol(exp)) + ' = '
+  result += unparse(declarationValueExpression(exp))
+
+  return result
+})
+
 _table.set(LAMBDA, (exp, env) => makeProcedure(getLambdaParameters(exp), getLambdaBody(exp), env))
 _table.set(BLOCK, (exp, env) => {})
+
+_table.set(APPLICATION, exp => {
+  const app = exp.getCdr()
+  const op = getOperator(exp)
+  const x = getJSFirstOperand(app)
+  const y = getJSSecondOperand(app)
+
+  let result = ''
+
+  if(y) {
+    result += unparse(x)
+    result += ' ' + unparse(op) + ' '
+    result += unparse(y)
+  } else {
+    result += unparse(op)
+    result += unparse(x)
+  }
+
+  return result
+})
 
 function unparse(taggedList) {
   if(!isTaggedList(taggedList)) {
@@ -238,7 +277,7 @@ function unparse(taggedList) {
 
     throw new Error('not taggedList: ' + taggedList)
   }
-  
+
   const tag = getTag(taggedList)
   const handler = _table.get(tag)
 
@@ -247,7 +286,6 @@ function unparse(taggedList) {
 
   return handler(taggedList)
 }
-
 
 module.exports = {
   sicpEval,
