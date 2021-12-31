@@ -1,6 +1,6 @@
 // 4.1.1 The core of the evaluator
 // some parts are implemented in the fellow section
-const { car, cdr, map } = require('./utils')
+const { map } = require('./utils')
 
 const {
   SYMBOL, IF, SEQUENCE, ASSIGNMENT, LAMBDA, BLOCK,
@@ -13,8 +13,8 @@ const {
   isIf, getIfPredicate, getIfConsequent, getIfAlternative,
   makeBegin, isBegin, beginActions, getFirstExp, getRestExps, isLastExp, isEmptySequence,
   isLambda, getLambdaParameters, getLambdaBody,
-  isApplication, getOperator, getOperands,
-  getJSFirstOperand, getJSSecondOperand,
+  isApplication, getOperator, getOperands, getFirstOperand, getRestOperands,
+  // getJSFirstOperand, getJSSecondOperand,
   declarationSymbol, declarationValueExpression,
 } = require('./4-1-2.js')
 
@@ -115,14 +115,14 @@ function sicpJsEval() {
     if(isSelfEvaluating(component))
       return component
 
-    const _eval = _table.get(car(component))
+    const _eval = _table.get(component.getCar())
     if(typeof _eval === 'function')
       return _eval(component, env)
 
     throw new Error(`Unknown component for evaluate: ${component}`)
   }
 
-  return dispatch
+  return { dispatch, _evalTable: _table }
 }
 
 function sicpJsApply(fn, args) {
@@ -144,7 +144,7 @@ function sicpJsApply(fn, args) {
   throw new Error(`Unknown procedure type -- Apply: ${fn}`)
 }
 
-const evaluate = sicpJsEval()
+const { evaluate, _evalTable } = sicpJsEval()
 const apply = sicpJsApply
 
 // Procedure arguments
@@ -188,109 +188,138 @@ function evalDefinition(exp, env) {
   )
 }
 
-const _table = new Map() // eslint-disable-line
-const END_OF_STATE = '; '
+function initUnparse() {
+  const _table = new Map() // eslint-disable-line
+  const SPACE = ' '
+  const END_OF_STATE = ';' + SPACE
 
-_table.set(LITERAL, exp => {
-  const result = exp.getCadr()
-  return typeof result === 'string' ? `"${result}"` : result
-})
+  _table.set(LITERAL, exp => {
+    const result = exp.getCadr()
+    return typeof result === 'string' ? `"${result}"` : result
+  })
 
-_table.set(SYMBOL, exp => exp.getCadr())
+  _table.set(SYMBOL, exp => exp.getCadr())
 
-_table.set(IF, exp => {
-  let res = IF + '('
+  _table.set(SEQUENCE, exp => {
+    let result = ''
+    if(!isBegin(exp))
+      throw new Error(`Unparse sequence ended with unSeq: ${exp}`)
 
-  res += unparse(getIfPredicate(exp))
-  res += ') { '
-  res += unparse(getIfConsequent(exp))
-  res += ' } '
+    const seq = beginActions(exp)
 
-  if(getIfAlternative(exp)) {
-    res += 'else { '
-    res += unparse(getIfAlternative(exp))
-    res += ' } '
-  }
+    if(isEmptySequence(seq))
+      return result
 
-  return res
-})
+    result += _doUnparse(getFirstExp(seq)) + END_OF_STATE
+    result += _doUnparse(makeBegin(getRestExps(seq)))
 
-_table.set(SEQUENCE, exp => {
-  let result = ''
-  if(!isBegin(exp))
-    throw new Error(`Unparse sequence ended with unSeq: ${exp}`)
-
-  const seq = beginActions(exp)
-
-  if(isEmptySequence(seq))
     return result
+  })
 
-  result += unparse(getFirstExp(seq)) + END_OF_STATE
-  result += unparse(makeBegin(getRestExps(seq)))
+  _table.set(ASSIGNMENT, exp => {
+    let result = ''
 
-  return result
-})
+    result += _doUnparse(assignmentVariable(exp)) + ' = '
+    result += _doUnparse(assignmentValue(exp))
 
-_table.set(ASSIGNMENT, exp => {
+    return result
+  })
 
-})
+  _table.set(CONSTANT_DECLARATION, exp => {
+    let result = CONSTANT_DECLARATION + ' '
 
-_table.set(CONSTANT_DECLARATION, exp => {
-  let result = CONSTANT_DECLARATION + ' '
+    result += _doUnparse(declarationSymbol(exp)) + ' = '
+    result += _doUnparse(declarationValueExpression(exp))
 
-  result += unparse(declarationSymbol(exp)) + ' = '
-  result += unparse(declarationValueExpression(exp))
+    return result
+  })
 
-  return result
-})
+  _table.set(BLOCK, exp => {
 
-_table.set(LAMBDA, (exp, env) => makeProcedure(getLambdaParameters(exp), getLambdaBody(exp), env))
-_table.set(BLOCK, (exp, env) => {})
+  })
 
-_table.set(APPLICATION, exp => {
-  const app = exp.getCdr()
-  const op = getOperator(exp)
-  const x = getJSFirstOperand(app)
-  const y = getJSSecondOperand(app)
+  _table.set(IF, exp => {
+    let res = IF + '('
 
-  let result = ''
+    res += _doUnparse(getIfPredicate(exp))
+    res += ') { '
+    res += _doUnparse(getIfConsequent(exp))
+    res += ' } '
 
-  if(y) {
-    result += unparse(x)
-    result += ' ' + unparse(op) + ' '
-    result += unparse(y)
-  } else {
-    result += unparse(op)
-    result += unparse(x)
-  }
-
-  return result
-})
-
-function unparse(taggedList) {
-  if(!isTaggedList(taggedList)) {
-    if(isSelfEvaluating(taggedList)) {
-      if(typeof taggedList === 'string')
-        return `"${taggedList}"`
-      return taggedList
+    if(getIfAlternative(exp)) {
+      res += 'else { '
+      res += _doUnparse(getIfAlternative(exp))
+      res += ' } '
     }
 
-    throw new Error('not taggedList: ' + taggedList)
+    return res
+  })
+
+  _table.set(LAMBDA, (exp, env) => {
+    return makeProcedure(getLambdaParameters(exp), getLambdaBody(exp), env)
+  })
+
+  _table.set(APPLICATION, exp => {
+    const app = exp.getCdr()
+    const op = getOperator(exp)
+    const operands = getOperands(app)
+    const x = getFirstOperand(operands)
+    const y = getFirstOperand(getRestOperands(operands))
+
+    let result = '('
+
+    if(y) {
+      result += _doUnparse(x)
+      result += ' ' + _doUnparse(op) + ' '
+      result += _doUnparse(y)
+    } else {
+      result += _doUnparse(op)
+      result += _doUnparse(x)
+    }
+
+    result += ')'
+
+    return result
+  })
+
+  function _doUnparse(taggedList) {
+    if(!isTaggedList(taggedList)) {
+      if(isSelfEvaluating(taggedList)) {
+        if(typeof taggedList === 'string')
+          return `"${taggedList}"`
+        return taggedList
+      }
+
+      throw new Error('not taggedList: ' + taggedList)
+    }
+
+    const tag = getTag(taggedList)
+    const handler = _table.get(tag)
+
+    if(typeof handler !== 'function')
+      throw new Error(`cannot get _doUnparse handler for tag: ${tag}`)
+
+    return handler(taggedList)
   }
 
-  const tag = getTag(taggedList)
-  const handler = _table.get(tag)
+  return _doUnparse
+}
 
-  if(typeof handler !== 'function')
-    throw new Error(`cannot get unparse handler for tag: ${tag}`)
+function unparse() {
+  let _doUnparse = null
 
-  return handler(taggedList)
+  return taggedList => {
+    if(!_doUnparse)
+      _doUnparse = initUnparse()
+
+    return _doUnparse(taggedList).trim()
+  }
 }
 
 module.exports = {
   sicpEval,
   sicpApply,
-  evaluate,
+  evaluate, _evalTable,
   apply,
-  unparse,
+  unparse: unparse(),
 }

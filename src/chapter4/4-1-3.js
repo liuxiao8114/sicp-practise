@@ -127,5 +127,5 @@ module.exports = {
   isTruthy,
   isFalsy,
   ...procedure,
-  ...frame,
+  ...frame, frame,
 }

@@ -2,11 +2,11 @@ const path = require('path')
 
 const SRC_ROOT = `../../src/chapter4/`
 const { Cons, car, cdr, pair, isNull, list, map } = require(path.join(SRC_ROOT, 'utils'))
-const { evaluate, unparse, } = require(path.join(SRC_ROOT, '4-1-1'))
+const { evaluate, _evalTable, unparse } = require(path.join(SRC_ROOT, '4-1-1'))
 const {
   isTaggedList,
   sicpIf,
-  operatorCombinationToApplication,
+  application, operatorCombinationToApplication,
   variable,
   assignment,
   begin,
@@ -17,12 +17,23 @@ const {
 const TRUE = "yes"
 const FALSE = "no"
 
+const ONE = 1
+const TWO = 2
+const STR_TWO = "2"
+const STR_THREE = '3'
+const X = 'x'
+const Y = 'y'
+
+// VAR
+const x = variable.makeVariable(X)
+const y = variable.makeVariable(Y)
+
 describe('chapter 4.1.2', () => {
   it('composite if', () => {
     const { makeIf, isIf, getIfPredicate } = sicpIf
     const literalTruePredicate = 1
     const literalFalsePredicate = 0
-    // const statePredicate = list()
+
     const TEST_IF_SIMPLE_TRUE = makeIf(literalTruePredicate, TRUE, FALSE)
     const TEST_IF_SIMPLE_FALSE = makeIf(literalFalsePredicate, TRUE, FALSE)
 
@@ -34,22 +45,25 @@ describe('chapter 4.1.2', () => {
 
   it('composite assignment', () => {
     const { makeAssignment, isAssignment, assignmentVariable, assignmentValue } = assignment
-    const x = variable.makeName('x')
-    const xTo1 = makeAssignment(x, 1)
-    const xToY = makeAssignment(x, 'y')
+    const xTo1 = makeAssignment(x, ONE)
+    const xToY = makeAssignment(x, Y)
     const xToFn = makeAssignment(x, () => console.log(`assign x to function`))
+
+    expect(isAssignment(xTo1)).toBe(true)
+    expect(isAssignment(xToY)).toBe(true)
+    expect(isAssignment(xToFn)).toBe(true)
 
     expect(assignmentVariable(xTo1)).toBe(x)
     expect(assignmentVariable(xToY)).toBe(x)
     expect(assignmentVariable(xToFn)).toBe(x)
 
-    expect(assignmentValue(xTo1)).toBe(1)
-    expect(assignmentValue(xToY)).toBe('y')
+    expect(assignmentValue(xTo1)).toBe(ONE)
+    expect(assignmentValue(xToY)).toBe(Y)
   })
 
   it('sequence/begin', () => {
     const { makeBegin, isBegin, beginActions, getFirstExp, getRestExps, isLastExp } = begin
-    const TEST_LIST = [ 1, 2 , "3", "4" ]
+    const TEST_LIST = [ ONE, TWO, STR_THREE ]
     const exp = makeBegin(list(...TEST_LIST))
     let i = 0
 
@@ -57,7 +71,6 @@ describe('chapter 4.1.2', () => {
     expect(isBegin(list(''))).toBe(false)
 
     let seq = beginActions(exp)
-    // console.log(`seq: ${seq.toString()}`)
 
     while(!isLastExp(seq)) {
       expect(getFirstExp(seq)).toBe(TEST_LIST[i++])
@@ -65,17 +78,43 @@ describe('chapter 4.1.2', () => {
     }
   })
 
-  it('operatorCombinationToApplication', () => {
-    // const TEST_STRING_1 = 'x = 1'
-    // const TEST_STRING_2 = 'y + 5'
-    // const TEST_STRING_3 = 'true === false'
+  describe('application', () => {
+    const { isApplication, getOperator, getOperands, getFirstOperand, getRestOperands } = application
 
-    const ONE = 1
-    const x = variable.makeName('x')
-    const xTo1 = assignment.makeAssignment(x, ONE)
+    it('operatorCombinationToApplication', () => {
+      // const TEST_STRING_1 = 'x = 1'
+      // const TEST_STRING_2 = 'y + 5'
+      // const TEST_STRING_3 = 'true === false'
 
-    const TEST_LIST_1 = list('===', xTo1, ONE)
-    operatorCombinationToApplication(TEST_LIST_1)
+      const BIN_OP = '==='
+      const UNI_OP = '!'
+      const xTo1 = assignment.makeAssignment(x, ONE)
+
+      const TEST_LIST_BIN = list(BIN_OP, xTo1, ONE)
+
+      // const { _getJSFirstOperand, _getJSSecondOperand } = jsSpec
+      // expect(_getJSFirstOperand(TEST_LIST_BIN).toString()).toBe(xTo1.toString())
+      // expect(_getJSSecondOperand(TEST_LIST_BIN).toString()).toBe(ONE.toString())
+
+      const expBin = operatorCombinationToApplication(TEST_LIST_BIN)
+      expect(isApplication(expBin)).toBe(true)
+      expect(getOperator(expBin).toString()).toBe('(symbol ===)')
+
+      const operandsBin = getOperands(expBin)
+      expect(getFirstOperand(operandsBin).toString()).toBe(xTo1.toString())
+      expect(getFirstOperand(getRestOperands(operandsBin)).toString()).toBe(ONE.toString())
+
+      const xToF = assignment.makeAssignment(x, false)
+      const TEST_LIST_UNI = list(UNI_OP, xToF)
+      const expUni = operatorCombinationToApplication(TEST_LIST_UNI)
+
+      expect(isApplication(expUni)).toBe(true)
+      expect(getOperator(expUni).toString()).toBe('(symbol !)')
+
+      const operandsUni = getOperands(expUni)
+      expect(getFirstOperand(operandsUni).toString()).toBe(xToF.toString())
+      expect(getFirstOperand(getRestOperands(operandsUni))).toBeNull()
+    })
   })
 })
 
@@ -109,7 +148,7 @@ describe('4.1.2 exercises', () => {
     to make the text easier to read is called pretty-printing.
   */
   describe('exec4.2', () => {
-    const TEST_IF_STRING = 'if(1) { "yes" } else { "no" } '
+    const TEST_IF_STRING = 'if(1) { "yes" } else { "no" }'
 
     it('unparse if', () => {
       const { makeIf } = sicpIf
@@ -120,30 +159,33 @@ describe('4.1.2 exercises', () => {
 
     it('unparse sequence', () => {
       const { makeBegin } = begin
-      const exp = makeBegin(list(1, 2, "1", "2"))
+      const { makeLiteral } = jsSpec
 
-      console.log(unparse(exp))
+      const exp = makeBegin(list(ONE, STR_TWO, makeLiteral(STR_THREE), x))
+      const EXPECT_EXP = `${ONE}; "${STR_TWO}"; "${STR_THREE}"; ${X};`
+
+      expect(unparse(exp)).toBe(EXPECT_EXP)
     })
 
     it('unparse composited sample', () => {
       const { makeBegin } = begin
       const { makeLiteral, makeConstantDeclaration } = jsSpec
 
-      const VAR_X = 'size'
+      const VAR_SIZE = variable.makeName('size')
       const exp = makeBegin(
         list(
-          makeConstantDeclaration(VAR_X, makeLiteral(2)),
+          makeConstantDeclaration(VAR_SIZE, makeLiteral(2)),
           operatorCombinationToApplication(
             list(
               '*',
               makeLiteral(5),
-              operatorCombinationToApplication(list('+', VAR_X, 1))
+              operatorCombinationToApplication(list('+', VAR_SIZE, 1))
             )
           )
         )
       )
 
-      console.log(unparse(exp))
+      expect(unparse(exp)).toBe("const size = 2; (5 * (size + 1));")
 
       /*
         parse("const size = 2; 5 * size;")
@@ -212,7 +254,19 @@ describe('4.1.2 exercises', () => {
     and eval_or. Alternatively, show how to implement && and || as derived components.
   */
   it('exec4.4', () => {
+    const OR = 'or'
+    const AND = 'and'
 
+    TAGS.OR = OR
+    TAGS.AND = AND
+
+    list('||', 1, 2)
+    list('&&', 1, 2)
+
+    _evalTable.set(OR, (exp, env) => {})
+    _evalTable.set(AND, (exp, env) => {})
+
+    expect(TAGS.OR).toBe(OR)
   })
 })
 

@@ -10,7 +10,7 @@ const LAMBDA = 'lambda'
 const COND = 'cond'
 const DEFINE = 'define'
 
-let TAGS = null
+let TAGS = { SYMBOL, IF, SEQUENCE, ASSIGNMENT, LAMBDA, COND }
 
 /*
   Literal expression: list('literal', value)
@@ -152,9 +152,13 @@ const application = {
     return base.isTaggedList(exp, APPLICATION) ? exp.getCddr() : exp.getCdr()
   },
   getFirstOperand(operands) {
+    if(!isPair(operands))
+      return null
     return operands.getCar()
   },
   getRestOperands(operands) {
+    if(!isPair(operands))
+      return null
     return operands.getCdr()
   },
   noOperands(operands) {
@@ -175,10 +179,15 @@ const CONSTANT_DECLARATION = 'const'
 const BLOCK = 'block'
 const RETURN = 'return'
 
-const JS_TAGS = { LITERAL, BLOCK, RETURN, APPLICATION, FUNCTION_DECLARATION, VARIABLE_DECLARATION, CONSTANT_DECLARATION,  }
+const JS_TAGS = {
+  LITERAL, BLOCK, RETURN, APPLICATION,
+  FUNCTION_DECLARATION, VARIABLE_DECLARATION, CONSTANT_DECLARATION,
+}
+
+TAGS = { ...TAGS, ...JS_TAGS }
 
 const BINARY_OPERATORS = /[+\-*/]|={1,3}/
-const UNARY_OPERATORS = /!~/
+const UNARY_OPERATORS = /[!~]/
 
 const jsSpec = {
   // Literal
@@ -197,12 +206,6 @@ const jsSpec = {
   ...{
     makeApplication(functionExp, ...argumentExps) {
       return new List(APPLICATION, functionExp, ...argumentExps)
-    },
-    getJSFirstOperand(component) {
-      return component.getCadr()
-    },
-    getJSSecondOperand(component) {
-      return component.getCaddr()
     },
   },
 
@@ -289,22 +292,32 @@ function isBinaryOperatorCombination(component) {
 }
 
 // This is a js-spec derived exp to convert exps like: x * y or !x to application.
+function getJSFirstOperand(exp) {
+  return exp.getCadr()
+}
+
+function getJSSecondOperand(exp) {
+  return exp.getCaddr()
+}
+
 function operatorCombinationToApplication(component) {
   if(!isPair(component))
     throw new Error(`component is not a list: ${component}`)
 
   let operator = isUnaryOperatorCombination(component)
+
   if(operator)
     return jsSpec.makeApplication(
       variable.makeVariable(operator),
-      new List(jsSpec.getJSFirstOperand(component))
+      getJSFirstOperand(component)
     )
 
   operator = isBinaryOperatorCombination(component)
   if(operator)
     return jsSpec.makeApplication(
       variable.makeVariable(operator),
-      new List(jsSpec.getJSFirstOperand(component), jsSpec.getJSSecondOperand(component))
+      getJSFirstOperand(component),
+      getJSSecondOperand(component)
     )
 
   throw new Error('Unknown Operator in component: ' + component)
@@ -329,11 +342,6 @@ list(
   )
 )
 
-TAGS = {
-  SYMBOL, IF, SEQUENCE, ASSIGNMENT, LAMBDA, COND,
-  ...JS_TAGS
-}
-
 module.exports = {
   ...TAGS, TAGS,
   ...base, base,
@@ -343,7 +351,7 @@ module.exports = {
   ...begin, begin,
   ...lambda,
   ...definition,
-  ...application,
+  ...application, application,
   ...jsSpec, jsSpec,
   isUnaryOperatorCombination,
   isBinaryOperatorCombination,
